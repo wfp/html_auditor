@@ -1,0 +1,7 @@
+html_auditor.content:
+  path: '/hello/{user}'
+  defaults:
+    _controller: '\Drupal\html_auditor\Controller\HtmlAuditorController::content'
+    _title: 'Hello Worldz'
+  requirements:
+    _permission: 'access content'
