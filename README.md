@@ -13,8 +13,10 @@ a11y-audit --path /home/lashab/wfp/sites/default/files/sitemaps --report /home/l
 html5-audit --path /home/lashab/wfp/sites/default/files/sitemaps --report /home/lashab/wfp/sites/default/files/reports \
 &&
 link-audit --path /home/lashab/wfp/sites/default/files/sitemaps --report /home/lashab/wfp/sites/default/files/reports --base-uri http://wfpnew.picktek.org
-
 ```
+
+You can find full commands explanation <a href="https://github.com/wfp/node-a11y-auditor">here</a>.
+
 ## Configuring cron job
 
 ```
@@ -27,4 +29,4 @@ Set cron <a href="https://www.drupal.org/node/23714">time</a>.
 
 ## TODO
 
-Install <a href="https://www.drupal.org/project/xmlsitemap"XML sitemap module</a> when stable.
+Install <a href="https://www.drupal.org/project/xmlsitemap">XML sitemap module</a> when stable.
