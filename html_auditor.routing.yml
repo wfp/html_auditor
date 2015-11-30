@@ -1,7 +1,7 @@
-html_auditor.content:
-  path: '/hello/{user}'
+html_auditor.module_settings:
+  path: '/admin/config/html_auditor'
   defaults:
-    _controller: '\Drupal\html_auditor\Controller\HtmlAuditorController::content'
-    _title: 'Hello Worldz'
+    _form: '\Drupal\html_auditor\Form\HtmlauditorConfigurationForm'
+    _title: 'HTML auditor settings'
   requirements:
-    _permission: 'access content'
+    _permission: 'administer site configuration'

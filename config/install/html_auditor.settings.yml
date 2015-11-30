@@ -1,0 +1,10 @@
+sitemap_xml_uri: 'http://www.wfp.org/sitemap.xml'
+sitemaps_files_path: files/sitemaps
+a11y:
+  standard: WCAG2AAA
+  ignore:
+    notice: true
+    warning: true
+    error: false
+html5:
+  errors_only: true
