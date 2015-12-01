@@ -36,19 +36,25 @@ class HtmlauditorConfigurationForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('html_auditor.settings');
-    $form['sitemap_xml_uri'] = array(
+    $form['sitemap_uri'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Path to XML sitemap'),
-      '#default_value' => $config->get('sitemap_xml_uri'),
+      '#default_value' => $config->get('sitemap.uri'),
       '#size' => 40,
     );
-    $form['sitemaps_files_path'] = array(
+    $form['sitemap_files'] = array(
       '#type' => 'textfield',
-      '#title' => $this->t('Path to downloaded HTML pages'),
-      '#default_value' => $config->get('sitemaps_files_path'),
+      '#title' => $this->t('Downloaded HTML sitemaps directory name or path'),
+      '#default_value' => $config->get('sitemap.files'),
       '#size' => 40,
     );
-    $form['accessibility_standard'] = array(
+    $form['sitemap_reports'] = array(
+      '#type' => 'textfield',
+      '#title' => $this->t('Reported HTML sitemaps directory name or path'),
+      '#default_value' => $config->get('sitemap.reports'),
+      '#size' => 40,
+    );
+    $form['a11y_standard'] = array(
       '#type' => 'radios',
       '#title' => $this->t('Accessibility standard'),
       '#options' => array(
@@ -58,9 +64,9 @@ class HtmlauditorConfigurationForm extends ConfigFormBase {
       ),
       '#default_value' => $config->get('a11y.standard'),
     );
-    $form['accessibility_levels'] = array(
+    $form['a11y_ignore'] = array(
       '#type' => 'checkboxes',
-      '#title' => $this->t('Ignore Accessibility levels'),
+      '#title' => $this->t('Ignore accessibility levels'),
       '#options' => array(
         'notice' => $this->t('notice'),
         'warning' => $this->t('warning'),
@@ -70,8 +76,19 @@ class HtmlauditorConfigurationForm extends ConfigFormBase {
     );
     $form['html5_errors_only'] = array(
       '#type' => 'checkbox',
-      '#title' => $this->t('HTML5 errors only'),
+      '#title' => $this->t('HTML5 audit errors only'),
       '#default_value' => $config->get('html5.errors_only'),
+    );
+    $form['link_base_uri'] = array(
+      '#type' => 'textfield',
+      '#title' => $this->t('Link audit base URI'),
+      '#default_value' => $config->get('link.base_uri'),
+      '#size' => 40,
+    );
+    $form['link_report_verbose'] = array(
+      '#type' => 'checkbox',
+      '#title' => $this->t('Link audit report verbose'),
+      '#default_value' => $config->get('link.report_verbose'),
     );
     return parent::buildForm($form, $form_state);
   }
@@ -82,11 +99,14 @@ class HtmlauditorConfigurationForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
     $this->config('html_auditor.settings')
-      ->set('sitemap_xml_uri', $values['sitemap_xml_uri'])
-      ->set('sitemaps_files_path', $values['sitemaps_files_path'])
-      ->set('a11y.standard', $values['accessibility_standard'])
-      ->set('a11y.ignore', $values['accessibility_levels'])
+      ->set('sitemap.uri', $values['sitemap_uri'])
+      ->set('sitemap.files', $values['sitemap_files'])
+      ->set('sitemap.reports', $values['sitemap_reports'])
+      ->set('a11y.standard', $values['a11y_standard'])
+      ->set('a11y.ignore', $values['a11y_ignore'])
       ->set('html5.errors_only', $values['html5_errors_only'])
+      ->set('link.base_uri', $values['link_base_uri'])
+      ->set('link.report_verbose', $values['link_report_verbose'])
       ->save();
   }
 

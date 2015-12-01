@@ -1,0 +1,44 @@
+<?php
+
+/**
+ * @file
+ * Allows site administrators to create HTML reports on cron run.
+ */
+
+use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
+
+const HTML_AUDITOR_CONFIG = 'html_auditor.settings';
+
+/**
+ * Implements hook_cron().
+ */
+function html_auditor_cron() {
+  global $base_url;
+  // Get configs.
+  $config = \Drupal::config(HTML_AUDITOR_CONFIG);
+  $files = drupal_realpath(sprintf('public://%s', $config->get('sitemap.files')));
+  $report = drupal_realpath(sprintf('public://%s', $config->get('sitemap.reports')));
+  // Build --ignore string for a11y.
+  $ignore = implode(';', array_filter($config->get('a11y.ignore')));
+  if ($files && $report) {
+    // Prepare command string.
+    $string[] = sprintf('html-fetch --uri %s --dir %s', $config->get('sitemap.uri'), $files);
+    $string[] = sprintf('a11y-audit --path %s --report %s --standard %s --ignore %s',
+      $files, $report, $config->get('a11y.standard'), "'$ignore'");
+    $string[] = sprintf('html5-audit --path %s --report %s --errors-only %d',
+      $files, $report, $config->get('html5.errors_only'));
+    $string[] = sprintf('link-audit --path %s --report %s --report-verbose %d --base-uri %s',
+      $files, $report, $config->get('link.report_verbose'), $base_url);
+    // Build command string.
+    $cmd = implode(' && ', $string);
+    // Run command.
+    $process = new Process($cmd);
+    try {
+      $process->mustRun();
+      debug($process->getOutput());
+    } catch (ProcessFailedException $e) {
+      debug($e->getMessage());
+    }
+  }
+}

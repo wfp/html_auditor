@@ -4,14 +4,17 @@
  * Implements hook_install().
  */
 function html_auditor_install() {
-  // Set default values for config which require dynamic values.
+  // Set default config values.
   \Drupal::configFactory()->getEditable('html_auditor.settings')
-    ->set('sitemap_xml_uri', 'http://www.wfp.org/sitemap.xml')
-    ->set('sitemaps_files_path', 'files/sitemaps')
+    ->set('sitemap.uri', 'http://www.wfp.org/sitemap.xml')
+    ->set('sitemap.files', 'sitemaps')
+    ->set('sitemap.reports', 'reports')
     ->set('a11y.standard', 'WCAG2AAA')
     ->set('a11y.ignore.notice', TRUE)
     ->set('a11y.ignore.warning', TRUE)
     ->set('a11y.ignore.error', FALSE)
     ->set('html5.errors_only', TRUE)
+    ->set('link.base_uri', 'http://www.wfp.org')
+    ->set('link.report_verbose', FALSE)
     ->save();
 }
