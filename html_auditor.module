@@ -43,11 +43,11 @@ function html_auditor_cron() {
   }
 }
 
- function html_auditor_theme() {
-    $theme['reporting'] = [
-      'variables' => ['name' => NULL],
-      'template' => 'reporting'
-      ];
+function html_auditor_theme() {
+  $theme['report'] = [
+    'variables' => ['name' => NULL, 'reports' => []],
+    'template' => 'report'
+  ];
 
-    return $theme;
-  }
+  return $theme;
+}

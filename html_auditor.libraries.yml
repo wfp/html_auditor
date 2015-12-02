@@ -1,0 +1,7 @@
+reporting-lib:
+  version: 1.0
+  css:
+    theme:
+      css/report.css: {}
+  js:
+    js/report.js: {}

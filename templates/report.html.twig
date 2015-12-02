@@ -1,3 +1,9 @@
-<div class="acme-hello-text">
-  <h1>Hello {{ name }}!</h1>
-</div>
+{% for report in reports %}
+    <div class="{{ report.name }}">
+        <h1>{{ report.name }}</h1>
+        <table>
+            <thead></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+{% endfor %}
