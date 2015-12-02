@@ -42,12 +42,3 @@ function html_auditor_cron() {
     }
   }
 }
-
- function html_auditor_theme() {
-    $theme['reporting'] = [
-      'variables' => ['name' => NULL],
-      'template' => 'reporting'
-      ];
-
-    return $theme;
-  }
