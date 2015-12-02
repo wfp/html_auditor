@@ -8,15 +8,13 @@
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
-const HTML_AUDITOR_CONFIG = 'html_auditor.settings';
-
 /**
  * Implements hook_cron().
  */
 function html_auditor_cron() {
   global $base_url;
   // Get configs.
-  $config = \Drupal::config(HTML_AUDITOR_CONFIG);
+  $config = \Drupal::config('html_auditor.settings');
   $files = drupal_realpath(sprintf('public://%s', $config->get('sitemap.files')));
   $report = drupal_realpath(sprintf('public://%s', $config->get('sitemap.reports')));
   // Build --ignore string for a11y.

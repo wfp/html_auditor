@@ -14,7 +14,7 @@ use Symfony\Component\Finder\Finder;
 class AuditorController extends ControllerBase {
 
   /**
-   * Reports data for theme table.
+   * Reports rows data for theme table.
    *
    * @var \Drupal\html_auditor\Controller\AuditorController
    */
@@ -85,6 +85,7 @@ class AuditorController extends ControllerBase {
         ]
       ]
     ];
+
     return $build;
   }
 
