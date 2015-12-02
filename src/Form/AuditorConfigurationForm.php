@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\html_auditor\Form\HtmlauditorConfigurationForm.
+ * Contains \Drupal\html_auditor\Form\AuditorConfigurationForm.
  */
 
 namespace Drupal\html_auditor\Form;
@@ -13,7 +13,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Defines a form that configures html_auditor module settings.
  */
-class HtmlauditorConfigurationForm extends ConfigFormBase {
+class AuditorConfigurationForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
