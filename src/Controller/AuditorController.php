@@ -8,49 +8,52 @@
 namespace Drupal\html_auditor\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Component\Serialization\Json;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Finder\Finder;
 
 class AuditorController extends ControllerBase {
 
   /**
-   * Reports rows data for theme table.
+   * The form builder service.
    *
-   * @var \Drupal\html_auditor\Controller\AuditorController
+   * @var \Drupal\Core\Form\FormBuilderInterface
    */
-  private $reports = [];
+  protected $formBuilder;
 
   /**
-   * Get reports directory.
-   *
-   * @return string
-   *   Full path to the reports directory.
+   * {@inheritdoc}
    */
-  private function getReportsDirectory() {
-    // Get html_auditor.settings config.
-    $config = $this->config('html_auditor.settings');
-    return \Drupal::service('file_system')->realpath(sprintf('public://%s', $config->get('sitemap.reports')));
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('form_builder')
+    );
   }
 
   /**
-   * Get basename.
+   * Constructs a AuditorController object.
    *
-   * @param string $file
-   *   File with full path.
-   * @return string
-   *   File basename.
+   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   *   The form builder service.
    */
-  private function getFileBasename($file) {
-    return \Drupal::service('file_system')->basename($file);
+  public function __construct(FormBuilderInterface $form_builder) {
+    $this->formBuilder = $form_builder;
   }
 
   /**
    * {@inheritdoc}
    */
   public function report() {
+    $reports = [];
+    // Get configs.
+    $config = $this->config('html_auditor.settings');
+    // Get finder service.
+    $finder = \Drupal::service('html_auditor.finder');
+    // Get reports directory.
+    $directory = \Drupal::service('file_system')->realpath(sprintf('public://%s', $config->get('sitemap.reports')));
     // Get JSON content from files.
-    $finder = new Finder();
-    $finder->files()->in($this->getReportsDirectory());
+    $finder->files()->in($directory);
     foreach ($finder as $file) {
       // Get data as an object.
       $contents = (object) Json::decode($file->getContents());
@@ -60,11 +63,11 @@ class AuditorController extends ControllerBase {
           case 'assessibility':
             foreach ($content as $file => $data) {
               foreach ($data as $report) {
-                $this->reports[] = [
-                  $this->getFileBasename($file),
-                  $type,
-                  $this->t($report['type']),
-                  $this->t($report['message']),
+                $reports[] = [
+                  'file' => \Drupal::service('file_system')->basename($file),
+                  'type' => $type,
+                  'level' => $report['type'],
+                  'message' => $this->t($report['message']),
                 ];
               }
             }
@@ -73,11 +76,11 @@ class AuditorController extends ControllerBase {
           case 'html5':
             foreach ($content as $file => $data) {
               foreach ($data as $report) {
-                $this->reports[] = [
-                  $this->getFileBasename($file),
-                  $type,
-                  $this->t($report['type']),
-                  $this->t($report['message']),
+                $reports[] = [
+                 'file' => \Drupal::service('file_system')->basename($file),
+                 'type' => $type,
+                 'level' => $report['type'],
+                 'message' => $this->t($report['message']),
                 ];
               }
             }
@@ -86,11 +89,11 @@ class AuditorController extends ControllerBase {
           case 'link':
             foreach ($content as $file => $data) {
               foreach ($data as $report) {
-                $this->reports[] = [
-                  $this->getFileBasename($file),
-                  $type,
-                  $this->t('error'),
-                  $this->t($report['error']),
+                $reports[] = [
+                 'file' => \Drupal::service('file_system')->basename($file),
+                 'type' => $type,
+                 'level' => 'error',
+                 'message' => $this->t($report['error']),
                 ];
               }
             }
@@ -98,8 +101,26 @@ class AuditorController extends ControllerBase {
         }
       }
     }
-    // Push report data in template.
-    $build = [
+
+    // Filter by type.
+    if (!empty($_SESSION['html_auditor_reports_filter']['type'])) {
+      $reports = array_filter($reports, function($report) {
+        $types = $_SESSION['html_auditor_reports_filter']['type'];
+        return in_array($report['type'], $types);
+      });
+    }
+    // Filter by error levels.
+    if (!empty($_SESSION['html_auditor_reports_filter']['level'])) {
+      $reports = array_filter($reports, function($report) {
+        $error_levels = $_SESSION['html_auditor_reports_filter']['level'];
+        return in_array($report['level'], $error_levels);
+      });
+    }
+
+    // Get reports filter form.
+    $build['reports_filter'] = $this->formBuilder->getForm('Drupal\html_auditor\Form\AuditorFilterForm');
+    // Get reports.
+    $build['reports'] = [
       '#theme' => 'table',
       '#header' => [
         $this->t('Filename'),
@@ -107,7 +128,7 @@ class AuditorController extends ControllerBase {
         $this->t('Level'),
         $this->t('Message'),
       ],
-      '#rows' => $this->reports,
+      '#rows' => $reports,
       '#attached' => [
         'library' => [
           'html_auditor/report'
