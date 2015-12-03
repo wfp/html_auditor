@@ -19,56 +19,82 @@ class AuditorController extends ControllerBase {
    * @var \Drupal\html_auditor\Controller\AuditorController
    */
   private $reports = [];
+
   /**
-   * Reports directory path.
+   * Get reports directory.
    *
-   * @var \Drupal\html_auditor\Controller\AuditorController
+   * @return string
+   *   Full path to the reports directory.
    */
-  private static $directory;
-  /**
-   * Constructs a AuditorController object.
-   */
-  public function __construct() {
-    // Get config.
+  private function getReportsDirectory() {
+    // Get html_auditor.settings config.
     $config = $this->config('html_auditor.settings');
-    // Get report directory path.
-    self::$directory = drupal_realpath(sprintf('public://%s', $config->get('sitemap.reports')));
+    return \Drupal::service('file_system')->realpath(sprintf('public://%s', $config->get('sitemap.reports')));
   }
+
+  /**
+   * Get basename.
+   *
+   * @param string $file
+   *   File with full path.
+   * @return string
+   *   File basename.
+   */
+  private function getFileBasename($file) {
+    return \Drupal::service('file_system')->basename($file);
+  }
+
   /**
    * {@inheritdoc}
    */
   public function report() {
     // Get JSON content from files.
     $finder = new Finder();
-    $finder->files()->in(self::$directory);
+    $finder->files()->in($this->getReportsDirectory());
     foreach ($finder as $file) {
+      // Get data as an object.
       $contents = (object) Json::decode($file->getContents());
-      // Extract link data.
-      if (isset($contents->link)) {
-        foreach ($contents->link as $file => $content) {
-          foreach ($content as $data) {
-            $this->reports[] = [
-              $data['error'],
-            ];
-          }
-        }
-      }
-      // Extract a11y data.
-      if (isset($contents->a11y)) {
-        foreach ($contents->a11y as $file => $content) {
-          foreach ($content as $data) {
-            $this->reports[] = [
-              $data['message'],
-            ];
-          }
-        }
-      }
-      // Extract html5 data.
-      if (isset($contents->html5)) {
-        foreach ($contents->html5 as $key => $content) {
-          $this->reports[] = [
-            $content['message'],
-          ];
+      foreach ($contents as $type => $content) {
+        switch ($type) {
+          // Extract a11y data.
+          case 'assessibility':
+            foreach ($content as $file => $data) {
+              foreach ($data as $report) {
+                $this->reports[] = [
+                  $this->getFileBasename($file),
+                  $type,
+                  $this->t($report['type']),
+                  $this->t($report['message']),
+                ];
+              }
+            }
+          break;
+          // Extract html5 data.
+          case 'html5':
+            foreach ($content as $file => $data) {
+              foreach ($data as $report) {
+                $this->reports[] = [
+                  $this->getFileBasename($file),
+                  $type,
+                  $this->t($report['type']),
+                  $this->t($report['message']),
+                ];
+              }
+            }
+          break;
+          // Extract link data.
+          case 'link':
+            foreach ($content as $file => $data) {
+              foreach ($data as $report) {
+                $this->reports[] = [
+                  $this->getFileBasename($file),
+                  $type,
+                  $this->t('error'),
+                  $this->t($report['error']),
+                ];
+              }
+            }
+          break;
         }
       }
     }
@@ -76,6 +102,9 @@ class AuditorController extends ControllerBase {
     $build = [
       '#theme' => 'table',
       '#header' => [
+        $this->t('Filename'),
+        $this->t('Type'),
+        $this->t('Level'),
         $this->t('Message'),
       ],
       '#rows' => $this->reports,
@@ -85,7 +114,6 @@ class AuditorController extends ControllerBase {
         ]
       ]
     ];
-
     return $build;
   }
 
