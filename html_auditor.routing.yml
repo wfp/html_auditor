@@ -4,11 +4,11 @@ html_auditor.module_settings:
     _form: '\Drupal\html_auditor\Form\AuditorConfigurationForm'
     _title: 'HTML auditor settings'
   requirements:
-    _permission: 'administer site configuration'
+    _permission: 'html audit configuration'
 html.auditor.report:
   path: '/admin/config/html_auditor/report'
   defaults:
     _controller: '\Drupal\html_auditor\Controller\AuditorController::report'
     _title: 'HTML report'
   requirements:
-   _permission: 'administer menu'
+   _permission: 'html audit reports'

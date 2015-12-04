@@ -138,20 +138,19 @@ class AuditorController extends ControllerBase {
     pager_default_initialize($reports_length, self::REPORTS_MAX_LENGTH);
     // Chunk reports array.
     $reports = array_chunk($reports, self::REPORTS_MAX_LENGTH);
-
     // Sort reports.
-    $type = \Drupal::request()->query->get('order', '');
-    $sort = \Drupal::request()->query->get('sort', '');
-    usort($reports[$page], function($prev, $next) use ($type) {
-      if (isset($prev[$type], $next[$type])) {
-        return strcmp($prev[$type], $next[$type]);
+    if (isset($reports[$page])) {
+      $type = \Drupal::request()->query->get('order', '');
+      $sort = \Drupal::request()->query->get('sort', '');
+      usort($reports[$page], function($prev, $next) use ($type) {
+        if (isset($prev[$type], $next[$type])) {
+          return strcmp($prev[$type], $next[$type]);
+        }
+      });
+      if ($sort === 'desc') {
+        $reports[$page] = array_reverse($reports[$page]);
       }
-    });
-
-    if ($sort === 'desc') {
-      $reports[$page] = array_reverse($reports[$page]);
     }
-
     // Get reports filter form.
     $build['reports_filter'] = $this->formBuilder->getForm('Drupal\html_auditor\Form\AuditorFilterForm');
     // Get reports.
