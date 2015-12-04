@@ -16,6 +16,11 @@ use Symfony\Component\Finder\Finder;
 class AuditorController extends ControllerBase {
 
   /**
+   * Reports limit per page.
+   */
+  const REPORTS_MAX_LENGTH = 10;
+
+  /**
    * The form builder service.
    *
    * @var \Drupal\Core\Form\FormBuilderInterface
@@ -66,7 +71,7 @@ class AuditorController extends ControllerBase {
                 $reports[] = [
                   'file' => \Drupal::service('file_system')->basename($file),
                   'type' => $type,
-                  'level' => $report['type'],
+                  'level' => $this->t($report['type']),
                   'message' => $this->t($report['message']),
                 ];
               }
@@ -79,7 +84,7 @@ class AuditorController extends ControllerBase {
                 $reports[] = [
                  'file' => \Drupal::service('file_system')->basename($file),
                  'type' => $type,
-                 'level' => $report['type'],
+                 'level' => $this->t($report['type']),
                  'message' => $this->t($report['message']),
                 ];
               }
@@ -92,7 +97,7 @@ class AuditorController extends ControllerBase {
                 $reports[] = [
                  'file' => \Drupal::service('file_system')->basename($file),
                  'type' => $type,
-                 'level' => 'error',
+                 'level' => $this->t('error'),
                  'message' => $this->t($report['error']),
                 ];
               }
@@ -101,7 +106,6 @@ class AuditorController extends ControllerBase {
         }
       }
     }
-
     // Filter by type.
     if (!empty($_SESSION['html_auditor_reports_filter']['type'])) {
       $reports = array_filter($reports, function($report) {
@@ -116,7 +120,14 @@ class AuditorController extends ControllerBase {
         return in_array($report['level'], $error_levels);
       });
     }
-
+    // Get reports count.
+    $reports_length = count($reports);
+    // Get page id.
+    $page = pager_find_page();
+    // Initialize pager.
+    pager_default_initialize($reports_length, self::REPORTS_MAX_LENGTH);
+    // Chunk reports array.
+    $reports = array_chunk($reports, self::REPORTS_MAX_LENGTH);
     // Get reports filter form.
     $build['reports_filter'] = $this->formBuilder->getForm('Drupal\html_auditor\Form\AuditorFilterForm');
     // Get reports.
@@ -128,12 +139,15 @@ class AuditorController extends ControllerBase {
         $this->t('Level'),
         $this->t('Message'),
       ],
-      '#rows' => $reports,
+      '#rows' => isset($reports[$page]) ? $reports[$page] : [],
       '#attached' => [
         'library' => [
           'html_auditor/report'
         ]
       ]
+    ];
+    $build['reports_pager'] = [
+      '#type' => 'pager',
     ];
     return $build;
   }

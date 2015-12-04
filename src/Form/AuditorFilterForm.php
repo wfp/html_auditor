@@ -27,10 +27,11 @@ class AuditorFilterForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $session = $_SESSION['html_auditor_reports_filter'];
     $form['filter'] = array(
       '#type' => 'details',
       '#title' => $this->t('Filter reports'),
-      '#open' => 0,
+      '#open' => !empty($session),
     );
     $form['filter']['status']['type'] = [
       '#title' => t('Type'),
@@ -43,6 +44,9 @@ class AuditorFilterForm extends FormBase {
         'link' => 'Link',
       ],
     ];
+    if (isset($session['type'])) {
+      $form['filter']['status']['type']['#default_value'] = $session['type'];
+    }
     $form['filter']['status']['level'] = [
       '#title' => t('Level'),
       '#type' => 'select',
@@ -54,6 +58,9 @@ class AuditorFilterForm extends FormBase {
         'error' => $this->t('Error'),
       ],
     ];
+    if (isset($session['level'])) {
+      $form['filter']['status']['level']['#default_value'] = $session['level'];
+    }
     $form['filter']['actions'] = array(
       '#type' => 'actions',
     );
@@ -61,7 +68,7 @@ class AuditorFilterForm extends FormBase {
       '#type' => 'submit',
       '#value' => $this->t('Filter'),
     ];
-    if (!empty($_SESSION['html_auditor_reports_filter'])) {
+    if (!empty($session)) {
       $form['filter']['actions']['reset'] = [
         '#type' => 'submit',
         '#value' => $this->t('Reset'),
