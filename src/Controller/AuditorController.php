@@ -19,7 +19,7 @@ class AuditorController extends ControllerBase {
   /**
    * Reports limit per page.
    */
-  const REPORTS_MAX_LENGTH = 10;
+  const REPORTS_MAX_LENGTH = 25;
 
   /**
    * The form builder service.
