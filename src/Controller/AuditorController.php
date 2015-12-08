@@ -73,13 +73,13 @@ class AuditorController extends ControllerBase {
     // Get configs.
     $config = $this->config('html_auditor.settings');
     // Get finder service.
-    $reports_find = \Drupal::service('html_auditor.finder');
+    $find = new Finder();
     // Get reports directory.
     $directory = $this->fileSystem->realpath(sprintf('public://%s', $config->get('sitemap.reports')));
     if (file_prepare_directory($directory)) {
       // Get JSON content from files.
-      $reports_find->files()->in($directory)->name('/[a-z0-9]+\-report.json$/');
-      foreach ($reports_find as $file) {
+      $find->files()->in($directory)->name('/[a-z0-9]+\-report.json$/');
+      foreach ($find as $file) {
         // Get data as an object.
         $contents = (object) Json::decode($file->getContents());
         foreach ($contents as $type => $content) {
@@ -154,16 +154,19 @@ class AuditorController extends ControllerBase {
         }
       }
       // Update filenames using URLs instead.
-      $maps = \Drupal::service('html_auditor.finder');
-      $maps->files()->in($directory)->name('map.json');
-      foreach ($maps as $map) {
+      $find = new Finder();
+      $find->files()->in($directory)->name('map.json');
+      $maps = [];
+      foreach ($find as $map) {
         $maps = Json::decode($map->getContents());
       }
       foreach ($reports as $i => $report) {
         foreach ($report as $j => $data) {
-          $uri = $maps[$reports[$i][$j]['file']];
-          $uri_parse = parse_url($uri);
-          $reports[$i][$j]['file'] = $this->l($uri_parse['path'], Url::fromUri($uri));
+          if (isset($maps[$reports[$i][$j]['file']])) {
+            $uri = $maps[$reports[$i][$j]['file']];
+            $uri_parse = parse_url($uri);
+            $reports[$i][$j]['file'] = $this->l($uri_parse['path'], Url::fromUri($uri));
+          }
         }
       }
     }
@@ -173,7 +176,7 @@ class AuditorController extends ControllerBase {
     $build['reports'] = [
       '#theme' => 'table',
       '#header' => [
-        ['data' => $this->t('url'), 'field' => 'url'],
+        ['data' => $this->t('url'), 'field' => 'Url'],
         ['data' => $this->t('type'), 'field' => 'Type'],
         ['data' => $this->t('level'), 'field' => 'Level'],
         $this->t('Message'),

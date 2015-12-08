@@ -1,3 +1,0 @@
-services:
-  html_auditor.finder:
-    class: Symfony\Component\Finder\Finder

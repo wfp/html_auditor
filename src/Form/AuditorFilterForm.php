@@ -27,7 +27,9 @@ class AuditorFilterForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $session = $_SESSION['html_auditor_reports_filter'];
+    // Get session.
+    $session = isset($_SESSION['html_auditor_reports_filter']) ? $_SESSION['html_auditor_reports_filter'] : [];
+    // Build form.
     $form['filter'] = array(
       '#type' => 'details',
       '#title' => $this->t('Filter reports'),
