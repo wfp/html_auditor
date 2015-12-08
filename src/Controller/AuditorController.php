@@ -10,8 +10,9 @@ namespace Drupal\html_auditor\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\File\FileSystem;
-use Drupal\Component\Serialization\Json;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Component\Serialization\Json;
 use Symfony\Component\Finder\Finder;
 
 class AuditorController extends ControllerBase {
@@ -160,7 +161,9 @@ class AuditorController extends ControllerBase {
       }
       foreach ($reports as $i => $report) {
         foreach ($report as $j => $data) {
-          $reports[$i][$j]['file'] = $maps[$reports[$i][$j]['file']];
+          $uri = $maps[$reports[$i][$j]['file']];
+          $uri_parse = parse_url($uri);
+          $reports[$i][$j]['file'] = $this->l($uri_parse['path'], Url::fromUri($uri));
         }
       }
     }
@@ -170,7 +173,7 @@ class AuditorController extends ControllerBase {
     $build['reports'] = [
       '#theme' => 'table',
       '#header' => [
-        ['data' => $this->t('filename'), 'field' => 'Filename'],
+        ['data' => $this->t('url'), 'field' => 'url'],
         ['data' => $this->t('type'), 'field' => 'Type'],
         ['data' => $this->t('level'), 'field' => 'Level'],
         $this->t('Message'),
