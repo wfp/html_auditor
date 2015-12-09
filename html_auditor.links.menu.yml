@@ -5,7 +5,7 @@ html_auditor.settings:
   position: left
   route_name: html_auditor.settings
 html.auditor.report:
-  title: 'HTML Reports'
+  title: 'HTML Audit Reports'
   parent: system.admin_reports
-  description: 'Overview of HTML reports.'
+  description: 'Overview of HTML audit reports.'
   route_name: html_auditor.report
