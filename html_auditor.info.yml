@@ -3,4 +3,4 @@ description: Generates HTML report.
 package: WFP
 type: module
 core: 8.x
-configure: html_auditor.module_settings
+configure: html_auditor.settings
