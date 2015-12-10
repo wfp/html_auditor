@@ -63,9 +63,9 @@ class AuditorConfigurationForm extends ConfigFormBase {
       '#type' => 'radios',
       '#title' => $this->t('Accessibility standard'),
       '#options' => array(
-        'WCAG2A' => 'WCAG2A',
-        'WCAG2AA' => 'WCAG2AA',
-        'WCAG2AAA' => 'WCAG2AAA',
+        'WCAG2A' => $this->t('WCAG2A'),
+        'WCAG2AA' => $this->t('WCAG2AA'),
+        'WCAG2AAA' => $this->t('WCAG2AAA'),
       ),
       '#default_value' => $config->get('a11y.standard'),
       '#required' => TRUE,
@@ -114,7 +114,7 @@ class AuditorConfigurationForm extends ConfigFormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $sitemaps_uri = $form_state->getValue('sitemap_uri');
-    if (!UrlHelper::isValid($sitemaps_uri, TRUE) ) {
+    if (!UrlHelper::isValid($sitemaps_uri, TRUE)) {
       $form_state->setErrorByName('sitemap_uri', $this->t('URL is not valid.'));
     }
   }

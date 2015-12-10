@@ -9,7 +9,6 @@ namespace Drupal\html_auditor\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Symfony\Component\HttpFoundation\Session\Session;
 
 /**
  * Provides the html reports filter form.
@@ -27,8 +26,12 @@ class AuditorFilterForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    // Get session.
-    $session = isset($_SESSION['html_auditor_reports_filter']) ? $_SESSION['html_auditor_reports_filter'] : [];
+    $session = [];
+    if ($_SESSION['html_auditor_reports_filter']) {
+      // Get session.
+      $session = $_SESSION['html_auditor_reports_filter'];
+    }
+
     // Build form.
     $form['filter'] = array(
       '#type' => 'details',
@@ -49,6 +52,7 @@ class AuditorFilterForm extends FormBase {
     if (isset($session['type'])) {
       $form['filter']['status']['type']['#default_value'] = $session['type'];
     }
+
     $form['filter']['status']['level'] = [
       '#title' => t('Level'),
       '#type' => 'select',
@@ -63,6 +67,7 @@ class AuditorFilterForm extends FormBase {
     if (isset($session['level'])) {
       $form['filter']['status']['level']['#default_value'] = $session['level'];
     }
+
     $form['filter']['actions'] = array(
       '#type' => 'actions',
     );
@@ -78,6 +83,7 @@ class AuditorFilterForm extends FormBase {
         '#submit' => ['::resetForm'],
       ];
     }
+
     return $form;
   }
 

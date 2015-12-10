@@ -15,6 +15,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Component\Serialization\Json;
 use Symfony\Component\Finder\Finder;
 
+/**
+ * Returns responses for html_auditor module routes.
+ */
 class AuditorController extends ControllerBase {
 
   /**
@@ -60,6 +63,56 @@ class AuditorController extends ControllerBase {
   }
 
   /**
+   * Filters the reports by type or level.
+   *
+   * @param array $reports
+   *   Reports data.
+   * @param string $type
+   *   Type of filter.
+   *
+   * @return object
+   *   Current object.
+   */
+  private function reportsFilter(array &$reports, $type) {
+    // Filter by type or level.
+    if (!empty($_SESSION['html_auditor_reports_filter'][$type])) {
+      $reports = array_filter($reports, function($report) use ($type) {
+        $types = $_SESSION['html_auditor_reports_filter'][$type];
+        return in_array($report[$type], $types);
+      });
+    }
+
+    return $this;
+  }
+
+  /**
+   * Sort reports.
+   *
+   * @param array $reports
+   *   Reports data.
+   *
+   * @return object
+   *   Current object.
+   */
+  private function reportsSortable(array &$reports) {
+    // Sort reports.
+    if (isset($reports)) {
+      $type = \Drupal::request()->query->get('order', '');
+      $sort = \Drupal::request()->query->get('sort', '');
+      usort($reports, function($prev, $next) use ($type) {
+        if (isset($prev[$type], $next[$type])) {
+          return strcmp($prev[$type], $next[$type]);
+        }
+      });
+      if ($sort === 'desc') {
+        $reports = array_reverse($reports);
+      }
+    }
+
+    return $this;
+  }
+
+  /**
    * Displays a listing of HTML reports.
    *
    * Ten reports are available per page.
@@ -70,109 +123,78 @@ class AuditorController extends ControllerBase {
    */
   public function report() {
     $reports = [];
-    // Get configs.
+    // Get configuration.
     $config = $this->config('html_auditor.settings');
-    // Get finder service.
-    $find = new Finder();
     // Get reports directory.
     $directory = $this->fileSystem->realpath(sprintf('public://%s', $config->get('sitemap.reports')));
-    if (file_prepare_directory($directory)) {
-      // Get JSON content from files.
-      $find->files()->in($directory)->name('/[a-z0-9]+\-report.json$/');
-      foreach ($find as $file) {
-        // Get data as an object.
-        $contents = (object) Json::decode($file->getContents());
-        foreach ($contents as $type => $content) {
-          foreach ($content as $file => $data) {
-            foreach ($data as $report) {
-              switch ($type) {
-                // Extract a11y data.
-                case 'assessibility':
-                  $reports[] = [
-                    'file' => $this->fileSystem->basename($file),
-                    'type' => $type,
-                    'level' => $this->t($report['type']),
-                    'message' => $this->t($report['message']),
-                  ];
-                break;
-                // Extract html5 data.
-                case 'html5':
-                  $reports[] = [
-                   'file' => $this->fileSystem->basename($file),
-                   'type' => $type,
-                   'level' => $this->t($report['type']),
-                   'message' => $this->t($report['message']),
-                  ];
-                break;
-                // Extract link data.
-                case 'link':
-                  $reports[] = [
-                   'file' => $this->fileSystem->basename($file),
-                   'type' => $type,
-                   'level' => $this->t('error'),
-                   'message' => $this->t($report['error']),
-                  ];
-                break;
-              }
+    $maps = [];
+    // New Finder instance.
+    $report_files = new Finder();
+    // New Finder instance.
+    $report_map = new Finder();
+    // Get map.json content.
+    $report_map->files()->in($directory)->name('map.json');
+    foreach ($report_map as $map) {
+      $maps = Json::decode($map->getContents());
+    }
+
+    // Get JSON content from files.
+    $report_files->files()->in($directory)->name('/[a-z0-9]+\-report.json$/');
+    foreach ($report_files as $file) {
+      // Get data as an object.
+      $contents = (object) Json::decode($file->getContents());
+      foreach ($contents as $type => $content) {
+        foreach ($content as $file => $data) {
+          foreach ($data as $report) {
+            // Get uri from map.json.
+            $uri = $maps[$this->fileSystem->basename($file)];
+            $uri_parse = parse_url($uri);
+            if ($type === 'assessibility' || $type === 'html5') {
+              // Extract a11y data.
+              // Extract html5 data.
+              $reports[] = [
+                'file' => $this->l($uri_parse['path'], Url::fromUri($uri)),
+                'type' => $type,
+                'level' => $this->t($report['type']),
+                'message' => $this->t($report['message']),
+              ];
+            }
+            elseif ($type === 'link') {
+              // Extract link data.
+              $reports[] = [
+                'file' => $this->fileSystem->basename($file),
+                'type' => $type,
+                'level' => $this->t('error'),
+                'message' => $this->t($report['error']),
+              ];
             }
           }
         }
       }
-      // Filter by type.
-      if (!empty($_SESSION['html_auditor_reports_filter']['type'])) {
-        $reports = array_filter($reports, function($report) {
-          $types = $_SESSION['html_auditor_reports_filter']['type'];
-          return in_array($report['type'], $types);
-        });
-      }
-      // Filter by error levels.
-      if (!empty($_SESSION['html_auditor_reports_filter']['level'])) {
-        $reports = array_filter($reports, function($report) {
-          $error_levels = $_SESSION['html_auditor_reports_filter']['level'];
-          return in_array($report['level'], $error_levels);
-        });
-      }
-      // Get reports count.
-      $reports_length = count($reports);
-      // Get page id.
-      $page = pager_find_page();
-      // Initialize pager.
-      pager_default_initialize($reports_length, self::REPORTS_MAX_LENGTH);
-      // Chunk reports array.
-      $reports = array_chunk($reports, self::REPORTS_MAX_LENGTH);
-      // Sort reports.
-      if (isset($reports[$page])) {
-        $type = \Drupal::request()->query->get('order', '');
-        $sort = \Drupal::request()->query->get('sort', '');
-        usort($reports[$page], function($prev, $next) use ($type) {
-          if (isset($prev[$type], $next[$type])) {
-            return strcmp($prev[$type], $next[$type]);
-          }
-        });
-        if ($sort === 'desc') {
-          $reports[$page] = array_reverse($reports[$page]);
-        }
-      }
-      // Update filenames using URLs instead.
-      $find = new Finder();
-      $find->files()->in($directory)->name('map.json');
-      $maps = [];
-      foreach ($find as $map) {
-        $maps = Json::decode($map->getContents());
-      }
-      foreach ($reports as $i => $report) {
-        foreach ($report as $j => $data) {
-          if (isset($maps[$reports[$i][$j]['file']])) {
-            $uri = $maps[$reports[$i][$j]['file']];
-            $uri_parse = parse_url($uri);
-            $reports[$i][$j]['file'] = $this->l($uri_parse['path'], Url::fromUri($uri));
-          }
-        }
-      }
     }
+
+    // Filter by type or / and level.
+    $this->reportsFilter($reports, 'type')->reportsFilter($reports, 'level');
+    // Get reports count.
+    $reports_length = count($reports);
+    // Initialize pager.
+    pager_default_initialize($reports_length, self::REPORTS_MAX_LENGTH);
+    // Chunk reports array.
+    $reports = array_chunk($reports, self::REPORTS_MAX_LENGTH);
+    // Get page id.
+    $page = pager_find_page();
+    // Make the reports sortable.
+    $this->reportsSortable($reports[$page]);
+
+    // Table rows.
+    $rows = [];
+    if (isset($page, $reports[$page])) {
+      $rows = $reports[$page];
+    }
+
     // Get reports filter form.
     $build['reports_filter'] = $this->formBuilder->getForm('Drupal\html_auditor\Form\AuditorFilterForm');
-    // Get reports.
+    // Get reports table.
     $build['reports'] = [
       '#theme' => 'table',
       '#header' => [
@@ -181,12 +203,12 @@ class AuditorController extends ControllerBase {
         ['data' => $this->t('level'), 'field' => 'Level'],
         $this->t('Message'),
       ],
-      '#rows' => isset($page, $reports[$page]) ? $reports[$page] : [],
+      '#rows' => $rows,
       '#attached' => [
         'library' => [
-          'html_auditor/report'
-        ]
-      ]
+          'html_auditor/report',
+        ],
+      ],
     ];
     $build['reports_pager'] = [
       '#type' => 'pager',
@@ -196,4 +218,3 @@ class AuditorController extends ControllerBase {
   }
 
 }
-
