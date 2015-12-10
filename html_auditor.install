@@ -14,7 +14,6 @@ function html_auditor_install() {
     ->set('a11y.ignore.warning', TRUE)
     ->set('a11y.ignore.error', FALSE)
     ->set('html5.errors_only', TRUE)
-    ->set('link.base_uri', 'http://www.wfp.org')
     ->set('link.report_verbose', FALSE)
     ->save();
 }
