@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Install function for the html_auditor module.
+ */
+
+/**
  * Implements hook_install().
  */
 function html_auditor_install() {

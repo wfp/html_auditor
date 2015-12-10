@@ -62,7 +62,8 @@ function html_auditor_cron() {
     $process->mustRun();
     // Log success run.
     $log->info(sprintf(HTML_AUDITOR_SUCCESS_MESSAGE, HTML_AUDITOR_HTML_FETCH));
-  } catch (ProcessFailedException $e) {
+  }
+  catch (ProcessFailedException $e) {
     // Log errors.
     $log->error($process->getErrorOutput());
   }
