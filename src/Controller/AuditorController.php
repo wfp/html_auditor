@@ -26,6 +26,11 @@ class AuditorController extends ControllerBase {
   const REPORTS_MAX_LENGTH = 25;
 
   /**
+   * Regular expression for matching report files.
+   */
+  const REPORT_FILES_REGEX = '/[a-z0-9]+\-report.json$/';
+
+  /**
    * The form builder service.
    *
    * @var \Drupal\Core\Form\FormBuilderInterface
@@ -113,6 +118,47 @@ class AuditorController extends ControllerBase {
   }
 
   /**
+   * Display reports.
+   *
+   * Renders reports filter form.
+   * Renders reports table.
+   * Renders reports pager.
+   *
+   * @param array $rows
+   *   Rows of reports.
+   *
+   * @return array
+   *   HTML reports structured array tree.
+   */
+  private function reportsDisplay($rows) {
+    // Render reports filter form.
+    $build['reports_filter'] = $this->formBuilder->getForm('Drupal\html_auditor\Form\AuditorFilterForm');
+    // Render reports table.
+    $build['reports_table'] = [
+      '#theme' => 'table',
+      '#header' => [
+        ['data' => $this->t('url'), 'field' => 'Url'],
+        ['data' => $this->t('type'), 'field' => 'Type'],
+        ['data' => $this->t('level'), 'field' => 'Level'],
+        $this->t('Message'),
+      ],
+      '#rows' => $rows,
+      '#empty' => $this->t('There are no HTML audit reports to display.'),
+      '#attached' => [
+        'library' => [
+          'html_auditor/report',
+        ],
+      ],
+    ];
+    // Render pager.
+    $build['reports_pager'] = [
+      '#type' => 'pager',
+    ];
+
+    return $build;
+  }
+
+  /**
    * Displays a listing of HTML reports.
    *
    * Ten reports are available per page.
@@ -121,12 +167,19 @@ class AuditorController extends ControllerBase {
    * @return array
    *   A render array as expected by drupal_render().
    */
-  public function report() {
+  public function reportsPage() {
     $reports = [];
     // Get configuration.
     $config = $this->config('html_auditor.settings');
     // Get reports directory.
     $directory = $this->fileSystem->realpath(sprintf('public://%s', $config->get('sitemap.reports')));
+    // Get report files.
+    $files = file_scan_directory($directory, self::REPORT_FILES_REGEX);
+    // Display empty message when report files don't exits.
+    if (!$files) {
+      return $this->reportsDisplay([]);
+    }
+
     $maps = [];
     // New Finder instance.
     $report_files = new Finder();
@@ -139,7 +192,7 @@ class AuditorController extends ControllerBase {
     }
 
     // Get JSON content from files.
-    $report_files->files()->in($directory)->name('/[a-z0-9]+\-report.json$/');
+    $report_files->files()->in($directory)->name(self::REPORT_FILES_REGEX);
     foreach ($report_files as $file) {
       // Get data as an object.
       $contents = (object) Json::decode($file->getContents());
@@ -162,7 +215,7 @@ class AuditorController extends ControllerBase {
             elseif ($type === 'link') {
               // Extract link data.
               $reports[] = [
-                'file' => $this->fileSystem->basename($file),
+                'file' => $this->l($uri_parse['path'], Url::fromUri($uri)),
                 'type' => $type,
                 'level' => $this->t('error'),
                 'message' => $this->t($report['error']),
@@ -185,36 +238,13 @@ class AuditorController extends ControllerBase {
     $page = pager_find_page();
     // Make the reports sortable.
     $this->reportsSortable($reports[$page]);
-
     // Table rows.
     $rows = [];
     if (isset($page, $reports[$page])) {
       $rows = $reports[$page];
     }
 
-    // Get reports filter form.
-    $build['reports_filter'] = $this->formBuilder->getForm('Drupal\html_auditor\Form\AuditorFilterForm');
-    // Get reports table.
-    $build['reports'] = [
-      '#theme' => 'table',
-      '#header' => [
-        ['data' => $this->t('url'), 'field' => 'Url'],
-        ['data' => $this->t('type'), 'field' => 'Type'],
-        ['data' => $this->t('level'), 'field' => 'Level'],
-        $this->t('Message'),
-      ],
-      '#rows' => $rows,
-      '#attached' => [
-        'library' => [
-          'html_auditor/report',
-        ],
-      ],
-    ];
-    $build['reports_pager'] = [
-      '#type' => 'pager',
-    ];
-
-    return $build;
+    return $this->reportsDisplay($rows);
   }
 
 }

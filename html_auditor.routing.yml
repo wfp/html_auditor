@@ -8,7 +8,7 @@ html_auditor.settings:
 html_auditor.report:
   path: '/admin/reports/html-auditor'
   defaults:
-    _controller: '\Drupal\html_auditor\Controller\AuditorController::report'
+    _controller: '\Drupal\html_auditor\Controller\AuditorController::reportsPage'
     _title: 'HTML Audit Reports'
   requirements:
    _permission: 'html audit reports'
