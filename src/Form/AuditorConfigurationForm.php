@@ -38,28 +38,28 @@ class AuditorConfigurationForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('html_auditor.settings');
-    $form['sitemap_uri'] = array(
+    $form['html_auditor']['sitemap_uri'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Path to XML sitemap'),
       '#default_value' => $config->get('sitemap.uri'),
       '#size' => 40,
       '#required' => TRUE,
     );
-    $form['sitemap_files'] = array(
+    $form['html_auditor']['sitemap_files'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Downloaded HTML sitemaps directory name or path'),
       '#default_value' => $config->get('sitemap.files'),
       '#size' => 40,
       '#required' => TRUE,
     );
-    $form['sitemap_reports'] = array(
+    $form['html_auditor']['sitemap_reports'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Reported HTML sitemaps directory name or path'),
       '#default_value' => $config->get('sitemap.reports'),
       '#size' => 40,
       '#required' => TRUE,
     );
-    $form['a11y_standard'] = array(
+    $form['html_auditor']['a11y_standard'] = array(
       '#type' => 'radios',
       '#title' => $this->t('Accessibility standard'),
       '#options' => array(
@@ -70,7 +70,7 @@ class AuditorConfigurationForm extends ConfigFormBase {
       '#default_value' => $config->get('a11y.standard'),
       '#required' => TRUE,
     );
-    $form['a11y_ignore'] = array(
+    $form['html_auditor']['a11y_ignore'] = array(
       '#type' => 'checkboxes',
       '#title' => $this->t('Ignore accessibility levels'),
       '#options' => array(
@@ -80,16 +80,21 @@ class AuditorConfigurationForm extends ConfigFormBase {
       ),
       '#default_value' => array_keys(array_filter($config->get('a11y.ignore'))),
     );
-    $form['html5_errors_only'] = array(
+    $form['html_auditor']['html5_errors_only'] = array(
       '#type' => 'checkbox',
       '#title' => $this->t('HTML5 audit errors only'),
       '#default_value' => $config->get('html5.errors_only'),
     );
-    $form['link_report_verbose'] = array(
+    $form['html_auditor']['link_report_verbose'] = array(
       '#type' => 'checkbox',
       '#title' => $this->t('Link audit report verbose'),
       '#default_value' => $config->get('link.report_verbose'),
     );
+    $form['html_auditor']['run'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Perform audit'),
+      '#submit' => ['::runAuditor'],
+    ];
     return parent::buildForm($form, $form_state);
   }
 
@@ -117,6 +122,13 @@ class AuditorConfigurationForm extends ConfigFormBase {
     if (!UrlHelper::isValid($sitemaps_uri, TRUE)) {
       $form_state->setErrorByName('sitemap_uri', $this->t('URL is not valid.'));
     }
+  }
+
+  /**
+   * Runs HTML auditor.
+   */
+  public function runAuditor() {
+    \Drupal::service('html_auditor')->run();
   }
 
 }
