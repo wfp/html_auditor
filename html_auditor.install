@@ -9,9 +9,10 @@
  * Implements hook_install().
  */
 function html_auditor_install() {
+  global $base_url;
   // Set default config values.
   \Drupal::configFactory()->getEditable('html_auditor.settings')
-    ->set('sitemap.uri', 'http://www.wfp.org/sitemap.xml')
+    ->set('sitemap.uri', sprintf('%s/sitemap.xml', $base_url))
     ->set('sitemap.files', 'sitemaps')
     ->set('sitemap.reports', 'reports')
     ->set('a11y.standard', 'WCAG2AAA')

@@ -1,15 +1,15 @@
 sitemap:
-  uri: 'https://www.xml-sitemaps.com/download/wfpnew.2264950/sitemap.xml'
+  uri: 'http://wfpnew.picktek.org/sitemap.xml'
   files: sitemaps
   reports: reports
 a11y:
   standard: WCAG2AAA
   ignore:
-    notice: notice
-    warning: warning
-    error: 0
+    notice: true
+    warning: true
+    error: false
 html5:
-  errors_only: 1
+  errors_only: true
 link:
   base_uri: 'http://wfpnew.picktek.org'
-  report_verbose: 1
+  report_verbose: false
