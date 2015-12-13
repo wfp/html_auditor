@@ -159,4 +159,25 @@ class AuditorExecute {
     }
   }
 
+  /**
+   * Runs test for html-fetch, a11y-audit, html5-audit, link-audit binaries.
+   */
+  public function runTest() {
+    // Use OS level 'type' to test for presence of CLI tools.
+    $process_fetch = new Process('type ' . self::HTML_AUDITOR_HTML_FETCH);
+    $process_accessibility = new Process('type ' . self::HTML_AUDITOR_ACCESSIBILITY_AUDIT);
+    $process_html = new Process('type ' . self::HTML_AUDITOR_HTML5_AUDIT);
+    $process_link = new Process('type ' . self::HTML_AUDITOR_LINK_AUDIT);
+
+    try {
+      $process_link->mustRun();
+      $process_html->mustRun();
+      $process_accessibility->mustRun();
+      $process_fetch->mustRun();
+    }
+    catch (ProcessFailedException $e) {
+      return $e->getMessage();
+    }
+  }
+
 }
