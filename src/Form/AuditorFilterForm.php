@@ -27,8 +27,7 @@ class AuditorFilterForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $session = [];
-    if ($_SESSION['html_auditor_reports_filter']) {
-      // Get session.
+    if (isset($_SESSION['html_auditor_reports_filter'])) {
       $session = $_SESSION['html_auditor_reports_filter'];
     }
 
