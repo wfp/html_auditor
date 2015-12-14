@@ -23,3 +23,37 @@ function html_auditor_install() {
     ->set('link.report_verbose', FALSE)
     ->save();
 }
+
+/**
+ * Implements hook_requirements().
+ */
+function html_auditor_requirements($phase) {
+
+  $requirements = array();
+
+  switch ($phase) {
+    case 'install':
+    case 'update':
+    case 'runtime':
+      $result = \Drupal::service('html_auditor')->runTest();
+      // HTML audit tools are not correctly installed.
+      if (isset($result)) {
+        $requirements['html_auditor'] = array(
+          'title' => t('HTML Auditor'),
+          'value' => t('HTML Auditor tools cannot be found on the system. See <a href="https://github.com/wfp/html_auditor/tree/develop#1-install-html-auditor">installation instructions</a>.<br /><br />Error: @result', array('@result' => $result)),
+          'severity' => REQUIREMENT_ERROR,
+        );
+      }
+      // HTML audit tools are correctly installed.
+      else {
+        $requirements['html_auditor'] = array(
+          'title' => t('HTML Auditor'),
+          'value' => t('HTML Auditor tools correctly installed.'),
+          'severity' => REQUIREMENT_OK,
+        );
+      }
+      break;
+  }
+
+  return $requirements;
+}
