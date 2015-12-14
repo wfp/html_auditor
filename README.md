@@ -8,6 +8,11 @@ This project require the NodeJS module [HTML Auditor](https://github.com/wfp/nod
 
 Ensure that web server has access to operating system `PATH`.
 
+## 3. Install one of sitemap generator module.
+
+  - <a href="https://www.drupal.org/project/xmlsitemap">XML sitemap</a>
+  - <a href="https://www.drupal.org/project/simple_sitemap">Simple XML sitemap</a>
+
 ```
 # PHP5 example using fpm
 vim /etc/php5/fpm/pool.d/www.conf
@@ -28,9 +33,3 @@ composer run phpcs
 # Run PHP Copy-Paste detector
 composer run phpcpd
 ```
-
-# TODO
-
-## 1. Install XML Sitemap
-
-- Install [XML sitemap module](https://www.drupal.org/project/xmlsitemap) when stable.

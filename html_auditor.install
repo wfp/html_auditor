@@ -52,6 +52,23 @@ function html_auditor_requirements($phase) {
           'severity' => REQUIREMENT_OK,
         );
       }
+
+      if (!\Drupal::moduleHandler()->moduleExists('simplesitemap')
+        && !\Drupal::moduleHandler()->moduleExists('xmlsitemap')) {
+        $requirements['sitemap_generator'] = array(
+          'title' => t('Sitemap Generator'),
+          'value' => t('<a href="https://www.drupal.org/project/xmlsitemap">XML sitemap</a> or <a href="https://www.drupal.org/project/simple_sitemap">Simple XML sitemap</a> must be installed.'),
+          'severity' => REQUIREMENT_ERROR,
+        );
+      }
+      else {
+        $requirements['sitemap_generator'] = array(
+          'title' => t('Sitemap Generator'),
+          'value' => t('Enabled'),
+          'severity' => REQUIREMENT_OK,
+        );
+      }
+
       break;
   }
 
