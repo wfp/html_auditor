@@ -100,14 +100,22 @@ class AuditorExecute {
     // Get html-fetch logger.
     $log = $this->loggerFactory->get(self::HTML_AUDITOR_HTML_FETCH);
     try {
+      // Success message.
+      $message = sprintf(self::HTML_AUDITOR_SUCCESS_MESSAGE, self::HTML_AUDITOR_HTML_FETCH);
       // Run command.
       $process->mustRun();
+      // Sets a success message to display to the user.
+      drupal_set_message($message);
       // Log success run.
-      $log->info(sprintf(self::HTML_AUDITOR_SUCCESS_MESSAGE, self::HTML_AUDITOR_HTML_FETCH));
+      $log->info($message);
     }
     catch (ProcessFailedException $e) {
+      // Error message.
+      $message = $process->getErrorOutput();
+      // Sets a error message to display to the user.
+      drupal_set_message($message, 'error');
       // Log errors.
-      $log->error($process->getErrorOutput());
+      $log->error($message);
     }
 
     // Create new process for a11y-audit.
@@ -116,14 +124,22 @@ class AuditorExecute {
     // Get a11y-audit logger.
     $log = $this->loggerFactory->get(self::HTML_AUDITOR_ACCESSIBILITY_AUDIT);
     try {
+      // Success message.
+      $message = sprintf(self::HTML_AUDITOR_SUCCESS_MESSAGE, self::HTML_AUDITOR_ACCESSIBILITY_AUDIT);
       // Run command.
       $process->mustRun();
+      // Sets a success message to display to the user.
+      drupal_set_message($message);
       // Log success run.
-      $log->info(sprintf(self::HTML_AUDITOR_SUCCESS_MESSAGE, self::HTML_AUDITOR_ACCESSIBILITY_AUDIT));
+      $log->info($message);
     }
     catch (ProcessFailedException $e) {
+      // Error message.
+      $message = $process->getErrorOutput();
+      // Sets a error message to display to the user.
+      drupal_set_message($message, 'error');
       // Log errors.
-      $log->error($process->getErrorOutput());
+      $log->error($message);
     }
 
     // Create new process for html5-audit.
@@ -132,14 +148,21 @@ class AuditorExecute {
     // Get html5-audit logger.
     $log = $this->loggerFactory->get(self::HTML_AUDITOR_HTML5_AUDIT);
     try {
+      $message = sprintf(self::HTML_AUDITOR_SUCCESS_MESSAGE, self::HTML_AUDITOR_HTML5_AUDIT);
       // Run command.
       $process->mustRun();
+      // Sets a success message to display to the user.
+      drupal_set_message($message);
       // Log success run.
-      $log->info(sprintf(self::HTML_AUDITOR_SUCCESS_MESSAGE, self::HTML_AUDITOR_HTML5_AUDIT));
+      $log->info($message);
     }
     catch (ProcessFailedException $e) {
+      // Error message.
+      $message = $process->getErrorOutput();
+      // Sets a error message to display to the user.
+      drupal_set_message($message, 'error');
       // Log errors.
-      $log->error($process->getErrorOutput());
+      $log->error($message);
     }
 
     // Create new process for link-audit.
@@ -148,14 +171,22 @@ class AuditorExecute {
     // Get link-audit logger.
     $log = $this->loggerFactory->get(self::HTML_AUDITOR_LINK_AUDIT);
     try {
+      // Success message.
+      $message = sprintf(self::HTML_AUDITOR_SUCCESS_MESSAGE, self::HTML_AUDITOR_LINK_AUDIT);
       // Run command.
       $process->mustRun();
+      // Sets a success message to display to the user.
+      drupal_set_message($message);
       // Log success run.
-      $log->info(sprintf(self::HTML_AUDITOR_SUCCESS_MESSAGE, self::HTML_AUDITOR_LINK_AUDIT));
+      $log->info($message);
     }
     catch (ProcessFailedException $e) {
+      // Error message.
+      $message = $process->getErrorOutput();
+      // Sets a error message to display to the user.
+      drupal_set_message($message, 'error');
       // Log errors.
-      $log->error($process->getErrorOutput());
+      $log->error($message);
     }
   }
 
