@@ -16,7 +16,7 @@ vim /etc/php5/fpm/pool.d/www.conf
 env[PATH] = /usr/local/bin:/usr/bin:/bin
 ```
 
-## 3. Install one of sitemap generator module.
+## 3. Install one of the sitemap generator module
 
   - <a href="https://www.drupal.org/project/xmlsitemap">XML sitemap</a>
   - <a href="https://www.drupal.org/project/simple_sitemap">Simple XML sitemap</a>
