@@ -2,27 +2,8 @@
 
 /**
  * @file
- * Install function for the html_auditor module.
+ * Install, update and uninstall functions for the html_auditor module.
  */
-
-/**
- * Implements hook_install().
- */
-function html_auditor_install() {
-  global $base_url;
-  // Set default config values.
-  \Drupal::configFactory()->getEditable('html_auditor.settings')
-    ->set('sitemap.uri', sprintf('%s/sitemap.xml', $base_url))
-    ->set('sitemap.files', 'sitemaps')
-    ->set('sitemap.reports', 'reports')
-    ->set('a11y.standard', 'WCAG2AAA')
-    ->set('a11y.ignore.notice', TRUE)
-    ->set('a11y.ignore.warning', TRUE)
-    ->set('a11y.ignore.error', FALSE)
-    ->set('html5.errors_only', TRUE)
-    ->set('link.report_verbose', FALSE)
-    ->save();
-}
 
 /**
  * Implements hook_requirements().
@@ -35,7 +16,10 @@ function html_auditor_requirements($phase) {
     case 'install':
     case 'update':
     case 'runtime':
-      $result = \Drupal::service('html_auditor')->runTest();
+      $result = NULL;
+      if (\Drupal::hasService('html_auditor')) {
+        $result = \Drupal::service('html_auditor')->runTest();
+      }
       // HTML audit tools are not correctly installed.
       if (isset($result)) {
         $requirements['html_auditor'] = array(
