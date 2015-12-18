@@ -1,0 +1,15 @@
+sitemap:
+  uri: ''
+  files: sitemaps
+  reports: reports
+a11y:
+  standard: WCAG2AAA
+  ignore:
+    notice: true
+    warning: true
+    error: false
+html5:
+  errors_only: true
+link:
+  base_uri: 'http://wfpnew.picktek.org'
+  report_verbose: false

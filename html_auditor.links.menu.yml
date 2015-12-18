@@ -1,0 +1,11 @@
+html_auditor.settings:
+  title: 'HTML Auditor'
+  parent: system.admin_config_development
+  description: 'Configure HTML auditor.'
+  position: left
+  route_name: html_auditor.settings
+html.auditor.report:
+  title: 'HTML Audit Reports'
+  parent: system.admin_reports
+  description: 'Overview of HTML audit reports.'
+  route_name: html_auditor.report
