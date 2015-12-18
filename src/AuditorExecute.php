@@ -95,8 +95,8 @@ class AuditorExecute {
     $ignore = implode(';', array_filter($config->get('a11y.ignore')));
 
     // Create new process for html-fetch.
-    $process = new Process(sprintf('%s --uri %s --dir %s --map %s',
-      self::HTML_AUDITOR_HTML_FETCH, $uri, $files, $report));
+    $process = new Process(sprintf('%s --uri %s --dir %s --map %s/%s',
+      self::HTML_AUDITOR_HTML_FETCH, $uri, $files, $report, 'map'));
     // Get html-fetch logger.
     $log = $this->loggerFactory->get(self::HTML_AUDITOR_HTML_FETCH);
     try {
