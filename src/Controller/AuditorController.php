@@ -200,7 +200,7 @@ class AuditorController extends ControllerBase {
         foreach ($content as $file => $data) {
           foreach ($data as $report) {
             // Get uri from map.json.
-            $uri = $maps[$this->fileSystem->basename($file)];
+            $uri = $maps['uris'][$this->fileSystem->basename($file)];
             $uri_parse = parse_url($uri);
             if ($type === 'assessibility' || $type === 'html5') {
               // Extract a11y data.
@@ -209,7 +209,7 @@ class AuditorController extends ControllerBase {
                 'file' => $this->l($uri_parse['path'], Url::fromUri($uri)),
                 'type' => $type,
                 'level' => $this->t($report['type']),
-                'message' => $this->t($report['message']),
+                'message' => $this->t((string)$report['message']),
               ];
             }
             elseif ($type === 'link') {
@@ -218,7 +218,7 @@ class AuditorController extends ControllerBase {
                 'file' => $this->l($uri_parse['path'], Url::fromUri($uri)),
                 'type' => $type,
                 'level' => $this->t('error'),
-                'message' => $this->t($report['error']),
+                'message' => $this->t((string)$report['error']),
               ];
             }
           }

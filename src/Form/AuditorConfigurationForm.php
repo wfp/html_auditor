@@ -59,6 +59,13 @@ class AuditorConfigurationForm extends ConfigFormBase {
       '#size' => 40,
       '#required' => TRUE,
     );
+    $form['html_auditor']['last_modified'] = array(
+      '#type' => 'textfield',
+      '#title' => $this->t('Last modified date e.g: (2015-09-01T12:00:00+00:00 or 2015-09-01)'),
+      '#default_value'	=>	$config->get('sitemap.last_modified'),
+      '#size' => 40,
+      '#required' => TRUE,
+    );
     $form['html_auditor']['a11y_standard'] = array(
       '#type' => 'radios',
       '#title' => $this->t('Accessibility standard'),
@@ -107,6 +114,7 @@ class AuditorConfigurationForm extends ConfigFormBase {
       ->set('sitemap.uri', $values['sitemap_uri'])
       ->set('sitemap.files', Xss::filter($values['sitemap_files']))
       ->set('sitemap.reports', Xss::filter($values['sitemap_reports']))
+      ->set('sitemap.last_modified', $values['last_modified'])
       ->set('a11y.standard', $values['a11y_standard'])
       ->set('a11y.ignore', $values['a11y_ignore'])
       ->set('html5.errors_only', $values['html5_errors_only'])

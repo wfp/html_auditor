@@ -2,6 +2,7 @@ sitemap:
   uri: ''
   files: sitemaps
   reports: reports
+  last_modified: ''
 a11y:
   standard: WCAG2AAA
   ignore:
@@ -11,5 +12,4 @@ a11y:
 html5:
   errors_only: true
 link:
-  base_uri: 'http://wfpnew.picktek.org'
   report_verbose: false
