@@ -89,19 +89,21 @@ class AuditorExecute {
     // Get html auditor configration.
     $config = $this->configFactory->get('html_auditor.settings');
     $uri = $config->get('sitemap.uri');
+    $lastmod = $config->get('lastmod');
     $files = $this->fileSystem->realpath((sprintf('public://%s', $config->get('sitemap.files'))));
     $report = $this->fileSystem->realpath((sprintf('public://%s', $config->get('sitemap.reports'))));
     // Build --ignore string for a11y.
     $ignore = implode(';', array_filter($config->get('a11y.ignore')));
 
     // Create new process for html-fetch.
-    $process = new Process(sprintf('%s --uri %s --dir %s --map %s/%s',
-      self::HTML_AUDITOR_HTML_FETCH, $uri, $files, $report, 'map'));
+    $process = new Process(sprintf('%s --uri %s --dir %s --map %s/%s --lastmod %s',
+      self::HTML_AUDITOR_HTML_FETCH, $uri, $files, $report, 'map', $config->get('sitemap.last_modified')));
     // Get html-fetch logger.
     $log = $this->loggerFactory->get(self::HTML_AUDITOR_HTML_FETCH);
     try {
       // Success message.
       $message = sprintf(self::HTML_AUDITOR_SUCCESS_MESSAGE, self::HTML_AUDITOR_HTML_FETCH);
+      $process->setTimeout(3600);
       // Run command.
       $process->mustRun();
       // Sets a success message to display to the user.
@@ -119,13 +121,14 @@ class AuditorExecute {
     }
 
     // Create new process for a11y-audit.
-    $process = new Process(sprintf('%s --path %s --report %s --standard %s --ignore %s',
-      self::HTML_AUDITOR_ACCESSIBILITY_AUDIT, $files, $report, $config->get('a11y.standard'), "'$ignore'"));
+    $process = new Process(sprintf('%s --path %s --report %s --standard %s --ignore %s --map %s/%s.json  --lastmod',
+      self::HTML_AUDITOR_ACCESSIBILITY_AUDIT, $files, $report, $config->get('a11y.standard'), "'$ignore'", $report, 'map'));
     // Get a11y-audit logger.
     $log = $this->loggerFactory->get(self::HTML_AUDITOR_ACCESSIBILITY_AUDIT);
     try {
       // Success message.
       $message = sprintf(self::HTML_AUDITOR_SUCCESS_MESSAGE, self::HTML_AUDITOR_ACCESSIBILITY_AUDIT);
+      $process->setTimeout(3600);
       // Run command.
       $process->mustRun();
       // Sets a success message to display to the user.
@@ -143,12 +146,13 @@ class AuditorExecute {
     }
 
     // Create new process for html5-audit.
-    $process = new Process(sprintf('%s --path %s --report %s --errors-only %d',
-      self::HTML_AUDITOR_HTML5_AUDIT, $files, $report, $config->get('html5.errors_only')));
+    $process = new Process(sprintf('%s --path %s --report %s --errors-only %d --map %s/%s.json --lastmod',
+      self::HTML_AUDITOR_HTML5_AUDIT, $files, $report, $config->get('html5.errors_only'), $report, 'map'));
     // Get html5-audit logger.
     $log = $this->loggerFactory->get(self::HTML_AUDITOR_HTML5_AUDIT);
     try {
       $message = sprintf(self::HTML_AUDITOR_SUCCESS_MESSAGE, self::HTML_AUDITOR_HTML5_AUDIT);
+      $process->setTimeout(3600);
       // Run command.
       $process->mustRun();
       // Sets a success message to display to the user.
@@ -166,13 +170,14 @@ class AuditorExecute {
     }
 
     // Create new process for link-audit.
-    $process = new Process(sprintf('%s --path %s --report %s --report-verbose %d --base-uri %s',
-      self::HTML_AUDITOR_LINK_AUDIT, $files, $report, $config->get('link.report_verbose'), $base_url));
+    $process = new Process(sprintf('%s --path %s --report %s --report-verbose %d --base-uri %s --map %s/%s.json --lastmod',
+      self::HTML_AUDITOR_LINK_AUDIT, $files, $report, $config->get('link.report_verbose'), $base_url, $report, 'map'));
     // Get link-audit logger.
     $log = $this->loggerFactory->get(self::HTML_AUDITOR_LINK_AUDIT);
     try {
       // Success message.
       $message = sprintf(self::HTML_AUDITOR_SUCCESS_MESSAGE, self::HTML_AUDITOR_LINK_AUDIT);
+      $process->setTimeout(3600);
       // Run command.
       $process->mustRun();
       // Sets a success message to display to the user.
