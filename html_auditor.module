@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * @file
+ * Allows site administrators to create HTML reports on cron run.
+ */
+
+/**
+ * Implements hook_cron().
+ */
+function html_auditor_cron() {
+  // Run html auditor.
+  \Drupal::service('html_auditor')->run();
+}

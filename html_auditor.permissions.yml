@@ -1,0 +1,8 @@
+html audit configuration:
+  title: 'HTML audit configuration'
+  description: 'Edit configurations and execute manual audits'
+  restrict access: TRUE
+html audit reports:
+  title: 'HTML audit reports'
+  description: 'Access audit reports'
+  restrict access: TRUE
