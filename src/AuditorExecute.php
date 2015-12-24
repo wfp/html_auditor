@@ -89,6 +89,7 @@ class AuditorExecute {
     // Get html auditor configration.
     $config = $this->configFactory->get('html_auditor.settings');
     $uri = $config->get('sitemap.uri');
+    $lastmod = $config->get('lastmod');
     $files = $this->fileSystem->realpath((sprintf('public://%s', $config->get('sitemap.files'))));
     $report = $this->fileSystem->realpath((sprintf('public://%s', $config->get('sitemap.reports'))));
     // Build --ignore string for a11y.
