@@ -90,6 +90,11 @@ class AuditorConfigurationForm extends ConfigFormBase {
       '#title' => $this->t('Link audit report verbose'),
       '#default_value' => $config->get('link.report_verbose'),
     );
+    $form['html_auditor']['lastmod'] = array(
+      '#type' => 'textfield',
+      '#title' => $this->t('Last modified date: (2015-09-01T12:00:00+00:00 or 2015-09-01)'),
+      '#default_value'	=>	$config->get('lastmod'),
+    );
     $form['html_auditor']['run'] = [
       '#type' => 'submit',
       '#value' => $this->t('Perform audit'),
@@ -111,6 +116,7 @@ class AuditorConfigurationForm extends ConfigFormBase {
       ->set('a11y.ignore', $values['a11y_ignore'])
       ->set('html5.errors_only', $values['html5_errors_only'])
       ->set('link.report_verbose', $values['link_report_verbose'])
+      ->set('lastmod', $values['lastmod'])
       ->save();
   }
 
