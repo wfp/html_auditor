@@ -21,22 +21,22 @@ class AuditorExecute {
   /**
    * HTML fetch command name - html-fetch.
    */
-  const HTML_AUDITOR_HTML_FETCH = 'html-fetch';
+  const HTML_AUDITOR_HTML_FETCH = 'html-audit fetch';
 
   /**
    * Accessibility audit command name - a11y-audit.
    */
-  const HTML_AUDITOR_ACCESSIBILITY_AUDIT = 'a11y-audit';
+  const HTML_AUDITOR_ACCESSIBILITY_AUDIT = 'html-audit a11y';
 
   /**
    * HTML5 audit command name - html5-audit.
    */
-  const HTML_AUDITOR_HTML5_AUDIT = 'html5-audit';
+  const HTML_AUDITOR_HTML5_AUDIT = 'html-audit html5';
 
   /**
    * Link audit command name - link-audit.
    */
-  const HTML_AUDITOR_LINK_AUDIT = 'link-audit';
+  const HTML_AUDITOR_LINK_AUDIT = 'html-audit link';
 
   /**
    * Command success message.
