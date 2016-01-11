@@ -61,8 +61,8 @@ class AuditorConfigurationForm extends ConfigFormBase {
     );
     $form['html_auditor']['last_modified'] = array(
       '#type' => 'textfield',
-      '#title' => $this->t('Last modified date e.g: (2015-09-01T12:00:00+00:00 or 2015-09-01)'),
-      '#default_value'	=>	$config->get('sitemap.last_modified'),
+      '#title' => $this->t('Audit pages modified since'),
+      '#default_value' => $config->get('sitemap.last_modified'),
       '#size' => 40,
       '#required' => TRUE,
     );
@@ -114,7 +114,7 @@ class AuditorConfigurationForm extends ConfigFormBase {
       ->set('sitemap.uri', $values['sitemap_uri'])
       ->set('sitemap.files', Xss::filter($values['sitemap_files']))
       ->set('sitemap.reports', Xss::filter($values['sitemap_reports']))
-      ->set('sitemap.last_modified', $values['last_modified'])
+      ->set('sitemap.last_modified', (int) $values['last_modified'])
       ->set('a11y.standard', $values['a11y_standard'])
       ->set('a11y.ignore', $values['a11y_ignore'])
       ->set('html5.errors_only', $values['html5_errors_only'])
@@ -127,8 +127,12 @@ class AuditorConfigurationForm extends ConfigFormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $sitemaps_uri = $form_state->getValue('sitemap_uri');
+    $date = (int) $form_state->getValue('last_modified');
     if (!UrlHelper::isValid($sitemaps_uri, TRUE)) {
       $form_state->setErrorByName('sitemap_uri', $this->t('URL is not valid.'));
+    }
+    if (!(int) $date) {
+      $form_state->setErrorByName('last_modified', $this->t('Incorrect hour.'));
     }
   }
 
