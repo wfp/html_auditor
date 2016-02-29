@@ -2,7 +2,7 @@ sitemap:
   uri: ''
   files: sitemaps
   reports: reports
-  last_modified: ''
+  last_modified: 6
 a11y:
   standard: WCAG2AAA
   ignore:

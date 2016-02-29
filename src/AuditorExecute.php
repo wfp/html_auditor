@@ -19,24 +19,29 @@ use Symfony\Component\Process\Process;
 class AuditorExecute {
 
   /**
-   * HTML fetch command name - html-fetch.
+   * HTML audit command name - html-audit.
    */
-  const HTML_AUDITOR_HTML_FETCH = 'html-audit fetch';
+  const HTML_AUDITOR_HTML_AUDIT = 'html-audit';
 
   /**
-   * Accessibility audit command name - a11y-audit.
+   * HTML fetch command name - fetch.
    */
-  const HTML_AUDITOR_ACCESSIBILITY_AUDIT = 'html-audit a11y';
+  const HTML_AUDITOR_HTML_FETCH = 'fetch';
 
   /**
-   * HTML5 audit command name - html5-audit.
+   * Accessibility audit command name - a11y.
    */
-  const HTML_AUDITOR_HTML5_AUDIT = 'html-audit html5';
+  const HTML_AUDITOR_ACCESSIBILITY_AUDIT = 'a11y';
 
   /**
-   * Link audit command name - link-audit.
+   * HTML5 audit command name - html5.
    */
-  const HTML_AUDITOR_LINK_AUDIT = 'html-audit link';
+  const HTML_AUDITOR_HTML5_AUDIT = 'html5';
+
+  /**
+   * Link audit command name - link.
+   */
+  const HTML_AUDITOR_LINK_AUDIT = 'link';
 
   /**
    * Command success message.
@@ -94,12 +99,12 @@ class AuditorExecute {
     $report = $this->fileSystem->realpath((sprintf('public://%s', $config->get('sitemap.reports'))));
     // Build --ignore string for a11y.
     $ignore = implode(';', array_filter($config->get('a11y.ignore')));
-
+    $date = date_iso8601(time() - (int) $config->get('sitemap.last_modified') * 3600);
     // Create new process for html-fetch.
-    $process = new Process(sprintf('%s --uri %s --dir %s --map %s/%s --lastmod %s',
-      self::HTML_AUDITOR_HTML_FETCH, $uri, $files, $report, 'map', $config->get('sitemap.last_modified')));
+    $process = new Process(sprintf('%s %s --uri %s --dir %s --map %s/%s --lastmod %s',
+      self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_HTML_FETCH, $uri, $files, $report, 'map', $date));
     // Get html-fetch logger.
-    $log = $this->loggerFactory->get(self::HTML_AUDITOR_HTML_FETCH);
+    $log = $this->loggerFactory->get(self::HTML_AUDITOR_HTML_AUDIT);
     try {
       // Success message.
       $message = sprintf(self::HTML_AUDITOR_SUCCESS_MESSAGE, self::HTML_AUDITOR_HTML_FETCH);
@@ -113,7 +118,7 @@ class AuditorExecute {
     }
     catch (ProcessFailedException $e) {
       // Error message.
-      $message = $process->getErrorOutput();
+      $message = $e->getMessage();
       // Sets a error message to display to the user.
       drupal_set_message($message, 'error');
       // Log errors.
@@ -121,10 +126,8 @@ class AuditorExecute {
     }
 
     // Create new process for a11y-audit.
-    $process = new Process(sprintf('%s --path %s --report %s --standard %s --ignore %s --map %s/%s.json  --lastmod',
-      self::HTML_AUDITOR_ACCESSIBILITY_AUDIT, $files, $report, $config->get('a11y.standard'), "'$ignore'", $report, 'map'));
-    // Get a11y-audit logger.
-    $log = $this->loggerFactory->get(self::HTML_AUDITOR_ACCESSIBILITY_AUDIT);
+    $process = new Process(sprintf('%s %s --path %s --report %s --standard %s --ignore %s --map %s/%s.json  --lastmod',
+      self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_ACCESSIBILITY_AUDIT, $files, $report, $config->get('a11y.standard'), "'$ignore'", $report, 'map'));
     try {
       // Success message.
       $message = sprintf(self::HTML_AUDITOR_SUCCESS_MESSAGE, self::HTML_AUDITOR_ACCESSIBILITY_AUDIT);
@@ -138,7 +141,7 @@ class AuditorExecute {
     }
     catch (ProcessFailedException $e) {
       // Error message.
-      $message = $process->getErrorOutput();
+      $message = $e->getMessage();
       // Sets a error message to display to the user.
       drupal_set_message($message, 'error');
       // Log errors.
@@ -146,10 +149,8 @@ class AuditorExecute {
     }
 
     // Create new process for html5-audit.
-    $process = new Process(sprintf('%s --path %s --report %s --errors-only %d --map %s/%s.json --lastmod',
-      self::HTML_AUDITOR_HTML5_AUDIT, $files, $report, $config->get('html5.errors_only'), $report, 'map'));
-    // Get html5-audit logger.
-    $log = $this->loggerFactory->get(self::HTML_AUDITOR_HTML5_AUDIT);
+    $process = new Process(sprintf('%s %s --path %s --report %s --errors-only %d --map %s/%s.json --lastmod',
+      self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_HTML5_AUDIT, $files, $report, $config->get('html5.errors_only'), $report, 'map'));
     try {
       $message = sprintf(self::HTML_AUDITOR_SUCCESS_MESSAGE, self::HTML_AUDITOR_HTML5_AUDIT);
       $process->setTimeout(3600);
@@ -162,7 +163,7 @@ class AuditorExecute {
     }
     catch (ProcessFailedException $e) {
       // Error message.
-      $message = $process->getErrorOutput();
+      $message = $e->getMessage();
       // Sets a error message to display to the user.
       drupal_set_message($message, 'error');
       // Log errors.
@@ -170,10 +171,10 @@ class AuditorExecute {
     }
 
     // Create new process for link-audit.
-    $process = new Process(sprintf('%s --path %s --report %s --report-verbose %d --base-uri %s --map %s/%s.json --lastmod',
-      self::HTML_AUDITOR_LINK_AUDIT, $files, $report, $config->get('link.report_verbose'), $base_url, $report, 'map'));
+    $process = new Process(sprintf('%s %s --path %s --report %s --report-verbose %d --base-uri %s --map %s/%s.json --lastmod',
+      self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_LINK_AUDIT, $files, $report, $config->get('link.report_verbose'), $base_url, $report, 'map'));
     // Get link-audit logger.
-    $log = $this->loggerFactory->get(self::HTML_AUDITOR_LINK_AUDIT);
+    $log = $this->loggerFactory->get(self::HTML_AUDITOR_HTML_AUDIT);
     try {
       // Success message.
       $message = sprintf(self::HTML_AUDITOR_SUCCESS_MESSAGE, self::HTML_AUDITOR_LINK_AUDIT);
@@ -187,7 +188,7 @@ class AuditorExecute {
     }
     catch (ProcessFailedException $e) {
       // Error message.
-      $message = $process->getErrorOutput();
+      $message = $e->getMessage();
       // Sets a error message to display to the user.
       drupal_set_message($message, 'error');
       // Log errors.
@@ -196,20 +197,14 @@ class AuditorExecute {
   }
 
   /**
-   * Runs test for html-fetch, a11y-audit, html5-audit, link-audit binaries.
+   * Runs test for html-audit.
    */
   public function runTest() {
     // Use OS level 'type' to test for presence of CLI tools.
-    $process_fetch = new Process('type ' . self::HTML_AUDITOR_HTML_FETCH);
-    $process_accessibility = new Process('type ' . self::HTML_AUDITOR_ACCESSIBILITY_AUDIT);
-    $process_html = new Process('type ' . self::HTML_AUDITOR_HTML5_AUDIT);
-    $process_link = new Process('type ' . self::HTML_AUDITOR_LINK_AUDIT);
+    $process_audit = new Process('type ' . self::HTML_AUDITOR_HTML_AUDIT);
 
     try {
-      $process_link->mustRun();
-      $process_html->mustRun();
-      $process_accessibility->mustRun();
-      $process_fetch->mustRun();
+      $process_audit->mustRun();
     }
     catch (ProcessFailedException $e) {
       return $e->getMessage();
