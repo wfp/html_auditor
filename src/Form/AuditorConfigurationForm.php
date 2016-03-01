@@ -38,6 +38,12 @@ class AuditorConfigurationForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('html_auditor.settings');
+    $sitemap_disabled = FALSE;
+    $service = \Drupal::service('html_auditor');
+    if (!$service->isSitemapEnabled()) {
+      drupal_set_message(t($service::HTML_AUDITOR_WARNING_MESSAGE), 'warning');
+      $sitemap_disabled = TRUE;
+    }
     $form['html_auditor']['sitemap_uri'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Path to XML sitemap'),
@@ -100,6 +106,7 @@ class AuditorConfigurationForm extends ConfigFormBase {
     $form['html_auditor']['run'] = [
       '#type' => 'submit',
       '#value' => $this->t('Perform audit'),
+      '#disabled' => $sitemap_disabled,
       '#submit' => ['::runAuditor'],
     ];
     return parent::buildForm($form, $form_state);

@@ -15,12 +15,10 @@ function html_auditor_requirements($phase) {
   switch ($phase) {
     case 'update':
     case 'runtime':
-      $result = NULL;
-      if (\Drupal::hasService('html_auditor')) {
-        $result = \Drupal::service('html_auditor')->runTest();
-      }
+      // Get html auditor service.
+      $service = \Drupal::service('html_auditor');
       // HTML audit tools are not correctly installed.
-      if (isset($result)) {
+      if ($service->isHtmlAuditorEnabled()) {
         $requirements['html_auditor'] = array(
           'title' => t('HTML Auditor'),
           'value' => t('HTML Auditor tools cannot be found on the system. See <a href="https://github.com/wfp/html_auditor/tree/develop#1-install-html-auditor">installation instructions</a>.<br /><br />Error: @result', array('@result' => $result)),
@@ -36,11 +34,10 @@ function html_auditor_requirements($phase) {
         );
       }
 
-      if (!\Drupal::moduleHandler()->moduleExists('simplesitemap')
-        && !\Drupal::moduleHandler()->moduleExists('xmlsitemap')) {
+      if (!$service->isSitemapEnabled()) {
         $requirements['sitemap_generator'] = array(
           'title' => t('Sitemap Generator'),
-          'value' => t('You should install one of <a href="https://www.drupal.org/project/xmlsitemap">XML sitemap</a> or <a href="https://www.drupal.org/project/simple_sitemap">Simple XML sitemap</a> to generate an sitemap.xml file in order to fully take advantage of HTML Auditor.'),
+          'value' => t($service::HTML_AUDITOR_WARNING_MESSAGE),
           'severity' => REQUIREMENT_WARNING,
         );
       }
