@@ -13,7 +13,6 @@ function html_auditor_requirements($phase) {
   $requirements = array();
 
   switch ($phase) {
-    case 'install':
     case 'update':
     case 'runtime':
       $result = NULL;
@@ -41,8 +40,8 @@ function html_auditor_requirements($phase) {
         && !\Drupal::moduleHandler()->moduleExists('xmlsitemap')) {
         $requirements['sitemap_generator'] = array(
           'title' => t('Sitemap Generator'),
-          'value' => t('<a href="https://www.drupal.org/project/xmlsitemap">XML sitemap</a> or <a href="https://www.drupal.org/project/simple_sitemap">Simple XML sitemap</a> must be installed.'),
-          'severity' => REQUIREMENT_ERROR,
+          'value' => t('You should install one of <a href="https://www.drupal.org/project/xmlsitemap">XML sitemap</a> or <a href="https://www.drupal.org/project/simple_sitemap">Simple XML sitemap</a> to generate an sitemap.xml file in order to fully take advantage of HTML Auditor.'),
+          'severity' => REQUIREMENT_WARNING,
         );
       }
       else {
