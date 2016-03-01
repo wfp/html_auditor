@@ -1,6 +1,6 @@
 html_auditor.settings:
   title: 'HTML Auditor'
-  parent: system.admin_config_development
+  parent: system.admin_config_search
   description: 'Configure HTML auditor.'
   position: left
   route_name: html_auditor.settings
