@@ -44,65 +44,79 @@ class AuditorConfigurationForm extends ConfigFormBase {
       drupal_set_message(t($service::HTML_AUDITOR_WARNING_MESSAGE), 'warning');
       $sitemap_disabled = TRUE;
     }
-    $form['html_auditor']['sitemap_uri'] = array(
+    $form['html_auditor']['sitemap_uri'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Path to XML sitemap'),
+      '#title' => $this->t('XML Sitemap file path or URL'),
+      '#description' => $this->t('Enter a file path such as /sitemap.xml or a URL such as http://example.com/sitemap.xml'),
       '#default_value' => $config->get('sitemap.uri'),
       '#size' => 40,
       '#required' => TRUE,
-    );
-    $form['html_auditor']['sitemap_files'] = array(
+    ];
+    $form['html_auditor']['sitemap_files'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Downloaded HTML sitemaps directory name or path'),
+      '#title' => $this->t('HTML download directory'),
+      '#description' => $this->t('Sub-directory that HTML pages are download into in the files/ directory'),
       '#default_value' => $config->get('sitemap.files'),
       '#size' => 40,
       '#required' => TRUE,
-    );
-    $form['html_auditor']['sitemap_reports'] = array(
+    ];
+    $form['html_auditor']['sitemap_reports'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Reported HTML sitemaps directory name or path'),
+      '#title' => $this->t('Report download directory'),
+      '#description' => $this->t('Sub-directory where reports are generated in the files/ directory'),
       '#default_value' => $config->get('sitemap.reports'),
       '#size' => 40,
       '#required' => TRUE,
-    );
-    $form['html_auditor']['last_modified'] = array(
+    ];
+    $form['html_auditor']['last_modified'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Audit pages modified since'),
+      '#description' => $this->t('Only audit pages which have been modified within this many hours.'),
+      '#field_suffix' => t('hours'),
       '#default_value' => $config->get('sitemap.last_modified'),
       '#size' => 40,
       '#required' => TRUE,
-    );
-    $form['html_auditor']['a11y_standard'] = array(
+    ];
+    $form['html_auditor']['a11y_standard'] = [
       '#type' => 'radios',
       '#title' => $this->t('Accessibility standard'),
-      '#options' => array(
+      '#description' => $this->t('The accessibility standard to use when testing pages.'),
+      '#options' => [
+        'Section508' => $this->t('Section508'),
         'WCAG2A' => $this->t('WCAG2A'),
         'WCAG2AA' => $this->t('WCAG2AA'),
         'WCAG2AAA' => $this->t('WCAG2AAA'),
-      ),
+      ],
       '#default_value' => $config->get('a11y.standard'),
       '#required' => TRUE,
-    );
-    $form['html_auditor']['a11y_ignore'] = array(
+    ];
+    $form['html_auditor']['a11y_ignore'] = [
       '#type' => 'checkboxes',
-      '#title' => $this->t('Ignore accessibility levels'),
-      '#options' => array(
+      '#title' => $this->t('Accessibility reporting level'),
+      '#description' => $this->t('The level of message to fail on'),
+      '#options' => [
         'notice' => $this->t('notice'),
         'warning' => $this->t('warning'),
         'error' => $this->t('error'),
-      ),
+      ],
       '#default_value' => array_keys(array_filter($config->get('a11y.ignore'))),
-    );
-    $form['html_auditor']['html5_errors_only'] = array(
-      '#type' => 'checkbox',
-      '#title' => $this->t('HTML5 audit errors only'),
+    ];
+    $form['html_auditor']['html5_errors_only'] = [
+      '#type' => 'checkboxes',
+      '#title' => $this->t('HTML5 audit'),
       '#default_value' => $config->get('html5.errors_only'),
-    );
-    $form['html_auditor']['link_report_verbose'] = array(
-      '#type' => 'checkbox',
-      '#title' => $this->t('Link audit report verbose'),
+      '#options' => [
+        1 => $this->t('HTML5 audit errors only'),
+      ],
+    ];
+    $form['html_auditor']['link_report_verbose'] = [
+      '#type' => 'checkboxes',
+      '#title' => $this->t('Link audit'),
       '#default_value' => $config->get('link.report_verbose'),
-    );
+      '#options' => [
+        1 => $this->t('Verbose Link audit report'),
+      ],
+    ];
     $form['html_auditor']['run'] = [
       '#type' => 'submit',
       '#value' => $this->t('Perform audit'),
@@ -133,12 +147,7 @@ class AuditorConfigurationForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    $sitemaps_uri = $form_state->getValue('sitemap_uri');
-    $date = (int) $form_state->getValue('last_modified');
-    if (!UrlHelper::isValid($sitemaps_uri, TRUE)) {
-      $form_state->setErrorByName('sitemap_uri', $this->t('URL is not valid.'));
-    }
-    if (!(int) $date) {
+    if (!(int) $form_state->getValue('last_modified')) {
       $form_state->setErrorByName('last_modified', $this->t('Incorrect hour.'));
     }
   }

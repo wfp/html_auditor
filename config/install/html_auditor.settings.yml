@@ -1,15 +1,15 @@
 sitemap:
-  uri: ''
+  uri: '/sitemap.xml'
   files: sitemaps
   reports: reports
   last_modified: 6
 a11y:
-  standard: WCAG2AAA
+  standard: WCAG2AA
   ignore:
-    notice: true
+    notice: false
     warning: true
-    error: false
+    error: true
 html5:
   errors_only: true
 link:
-  report_verbose: false
+  report_verbose: true

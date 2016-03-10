@@ -44,11 +44,6 @@ class AuditorExecute {
   const HTML_AUDITOR_LINK_AUDIT = 'link';
 
   /**
-   * Command success message.
-   */
-  const HTML_AUDITOR_SUCCESS_MESSAGE = '%s run successfully.';
-
-  /**
    * Command warning message.
    */
   const HTML_AUDITOR_WARNING_MESSAGE = 'You should install one of <a href="https://www.drupal.org/project/xmlsitemap">XML sitemap</a> or <a href="https://www.drupal.org/project/simple_sitemap">Simple XML sitemap</a> to generate an sitemap.xml file in order to fully take advantage of HTML Auditor.';
@@ -124,7 +119,7 @@ class AuditorExecute {
     $log = $this->loggerFactory->get(self::HTML_AUDITOR_HTML_AUDIT);
     try {
       // Success message.
-      $message = sprintf(self::HTML_AUDITOR_SUCCESS_MESSAGE, $type);
+      $message = $type . ' run successfully.';
       $process->setTimeout(3600);
       // Run command.
       $process->mustRun();
@@ -160,6 +155,11 @@ class AuditorExecute {
     $report = $this->fileSystem->realpath((sprintf('public://%s', $config->get('sitemap.reports'))));
     // Get sitemap uri.
     $uri = $config->get('sitemap.uri');
+    $parse_uri = parse_url($uri);
+    if (!isset($parse_uri['scheme'], $parse_uri['host'])) {
+      $uri = $base_url . '/' . ltrim($parse_uri['path'], '/');
+    }
+
     // Get lastmod.
     $lastmod = $config->get('lastmod');
     // Build --ignore argument for a11y.
