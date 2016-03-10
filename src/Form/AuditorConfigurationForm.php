@@ -47,7 +47,7 @@ class AuditorConfigurationForm extends ConfigFormBase {
     $form['html_auditor']['sitemap_uri'] = [
       '#type' => 'textfield',
       '#title' => $this->t('XML Sitemap file path or URL'),
-      '#description' => $this->t('Enter a file path such as /sitemap.xml or a URL such as http://example.com/sitemap.xml'),
+      '#description' => $this->t('Enter a file path such as <em>/sitemap.xml</em> or a URL such as <em>http://example.com/sitemap.xml</em>'),
       '#default_value' => $config->get('sitemap.uri'),
       '#size' => 40,
       '#required' => TRUE,
@@ -55,7 +55,7 @@ class AuditorConfigurationForm extends ConfigFormBase {
     $form['html_auditor']['sitemap_files'] = [
       '#type' => 'textfield',
       '#title' => $this->t('HTML download directory'),
-      '#description' => $this->t('Sub-directory that HTML pages are download into in the files/ directory'),
+      '#description' => $this->t('Sub-directory that HTML pages are download into in the <em>files/</em> directory'),
       '#default_value' => $config->get('sitemap.files'),
       '#size' => 40,
       '#required' => TRUE,
@@ -63,18 +63,19 @@ class AuditorConfigurationForm extends ConfigFormBase {
     $form['html_auditor']['sitemap_reports'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Report download directory'),
-      '#description' => $this->t('Sub-directory where reports are generated in the files/ directory'),
+      '#description' => $this->t('Sub-directory where reports are generated in the <em>files/</em> directory'),
       '#default_value' => $config->get('sitemap.reports'),
       '#size' => 40,
       '#required' => TRUE,
     ];
     $form['html_auditor']['last_modified'] = [
-      '#type' => 'textfield',
+      '#type' => 'number',
       '#title' => $this->t('Audit pages modified since'),
       '#description' => $this->t('Only audit pages which have been modified within this many hours.'),
       '#field_suffix' => t('hours'),
       '#default_value' => $config->get('sitemap.last_modified'),
       '#size' => 40,
+      '#min' => 1,
       '#required' => TRUE,
     ];
     $form['html_auditor']['a11y_standard'] = [
@@ -95,27 +96,23 @@ class AuditorConfigurationForm extends ConfigFormBase {
       '#title' => $this->t('Accessibility reporting level'),
       '#description' => $this->t('The level of message to fail on'),
       '#options' => [
-        'notice' => $this->t('notice'),
-        'warning' => $this->t('warning'),
         'error' => $this->t('error'),
+        'warning' => $this->t('warning'),
+        'notice' => $this->t('notice'),
       ],
       '#default_value' => array_keys(array_filter($config->get('a11y.ignore'))),
     ];
     $form['html_auditor']['html5_errors_only'] = [
-      '#type' => 'checkboxes',
-      '#title' => $this->t('HTML5 audit'),
+      '#type' => 'checkbox',
+      '#title' => $this->t('HTML5 audit errors only'),
       '#default_value' => $config->get('html5.errors_only'),
-      '#options' => [
-        1 => $this->t('HTML5 audit errors only'),
-      ],
+      '#prefix' => '<strong>HTML5 audit</strong>',
     ];
     $form['html_auditor']['link_report_verbose'] = [
-      '#type' => 'checkboxes',
-      '#title' => $this->t('Link audit'),
+      '#type' => 'checkbox',
+      '#title' => $this->t('Verbose Link audit report'),
       '#default_value' => $config->get('link.report_verbose'),
-      '#options' => [
-        1 => $this->t('Verbose Link audit report'),
-      ],
+      '#prefix' => '<strong>Link audit</strong>',
     ];
     $form['html_auditor']['run'] = [
       '#type' => 'submit',
@@ -135,21 +132,12 @@ class AuditorConfigurationForm extends ConfigFormBase {
       ->set('sitemap.uri', $values['sitemap_uri'])
       ->set('sitemap.files', Xss::filter($values['sitemap_files']))
       ->set('sitemap.reports', Xss::filter($values['sitemap_reports']))
-      ->set('sitemap.last_modified', (int) $values['last_modified'])
+      ->set('sitemap.last_modified', $values['last_modified'])
       ->set('a11y.standard', $values['a11y_standard'])
       ->set('a11y.ignore', $values['a11y_ignore'])
       ->set('html5.errors_only', $values['html5_errors_only'])
       ->set('link.report_verbose', $values['link_report_verbose'])
       ->save();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    if (!(int) $form_state->getValue('last_modified')) {
-      $form_state->setErrorByName('last_modified', $this->t('Incorrect hour.'));
-    }
   }
 
   /**

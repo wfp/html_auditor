@@ -144,11 +144,12 @@ class AuditorExecute {
    * Runs html-audit fetch, html-audit a11y, html-audit html5, html-audit link node commands.
    */
   public function run() {
+    global $base_url;
+    // Check for sitemap modules.
     if (!$this->isSitemapEnabled()) {
       return drupal_set_message(t(self::HTML_AUDITOR_WARNING_MESSAGE), 'warning');
     }
 
-    global $base_url;
     // Get html auditor configration.
     $config = $this->configFactory->get('html_auditor.settings');
     $files = $this->fileSystem->realpath((sprintf('public://%s', $config->get('sitemap.files'))));
@@ -162,8 +163,10 @@ class AuditorExecute {
 
     // Get lastmod.
     $lastmod = $config->get('lastmod');
-    // Build --ignore argument for a11y.
-    $ignore = implode(';', array_filter($config->get('a11y.ignore')));
+    // Build --ignore argument for a11y.;
+    $ignore = implode(';', array_keys(array_filter($config->get('a11y.ignore'), function($value){
+      return $value === 0;
+    }, ARRAY_FILTER_USE_BOTH)));
     // Set date.
     $date = date_iso8601(time() - (int) $config->get('sitemap.last_modified') * 3600);
     // Execute fetch html.
@@ -177,7 +180,7 @@ class AuditorExecute {
       self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_HTML5_AUDIT, $files, $report, $config->get('html5.errors_only'), $report, 'map'), self::HTML_AUDITOR_HTML5_AUDIT);
     // Execute link audit.
     $this->process_execute(sprintf('%s %s --path %s --report %s --report-verbose %d --base-uri %s --map %s/%s.json --lastmod',
-      self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_LINK_AUDIT, $files, $report, $config->get('link.report_verbose'), $base_url, $report, 'map'), self::HTML_AUDITOR_LINK_AUDIT);
+        self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_LINK_AUDIT, $files, $report, $config->get('link.report_verbose'), $base_url, $report, 'map'), self::HTML_AUDITOR_LINK_AUDIT);
   }
 
 }

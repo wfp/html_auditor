@@ -99,7 +99,7 @@ class AuditorController extends ControllerBase {
    * @return object
    *   Current object.
    */
-  private function reportsSortable(array &$reports) {
+  private function reportsSortable(&$reports) {
     // Sort reports.
     if (isset($reports)) {
       $type = \Drupal::request()->query->get('order', '');
