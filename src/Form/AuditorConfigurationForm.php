@@ -162,7 +162,7 @@ class AuditorConfigurationForm extends ConfigFormBase {
       $response = $client->get($uri);
     }
     catch (RequestException $e) {
-      $form_state->setErrorByName('sitemap_uri', $this->t('Sitemap XML not found.'));
+      $form_state->setErrorByName('sitemap_uri', $this->t('Sitemap XML not found.<br /><br />Error: ' . $e->getMessage()));
     }
   }
 
