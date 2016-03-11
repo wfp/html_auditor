@@ -11,6 +11,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\Component\Utility\Xss;
+use GuzzleHttp\Exception\RequestException;
 
 /**
  * Defines a form that configures html_auditor module settings.
@@ -138,6 +139,31 @@ class AuditorConfigurationForm extends ConfigFormBase {
       ->set('html5.errors_only', $values['html5_errors_only'])
       ->set('link.report_verbose', $values['link_report_verbose'])
       ->save();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    // Get sitemap uri or path.
+    $uri = $form_state->getValue('sitemap_uri');
+    $parse_uri = parse_url($uri);
+    if (!isset($parse_uri['scheme'], $parse_uri['host'])) {
+      global $base_url;
+    }
+
+    if ($base_url) {
+      $uri = sprintf('%s/%s', $base_url, ltrim($uri, '/'));
+    }
+
+    // Create http request and check whether the sitemap URI exists or not.
+    $client = \Drupal::httpClient();
+    try {
+      $response = $client->get($uri);
+    }
+    catch (RequestException $e) {
+      $form_state->setErrorByName('sitemap_uri', $this->t('Sitemap XML not found.'));
+    }
   }
 
   /**
