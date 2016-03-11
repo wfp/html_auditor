@@ -101,7 +101,8 @@ class AuditorExecute {
    * Check whether the sitemap module is enabled or not.
    */
   public function isSitemapEnabled() {
-    return \Drupal::moduleHandler()->moduleExists('simplesitemap') || \Drupal::moduleHandler()->moduleExists('xmlsitemap');
+    // For Simple XML sitemap, 'simplesitemap' is 1.x and 'simple_sitemap' is 2.x.
+    return \Drupal::moduleHandler()->moduleExists('simple_sitemap') || \Drupal::moduleHandler()->moduleExists('simplesitemap') || \Drupal::moduleHandler()->moduleExists('xmlsitemap');
   }
 
   /**
