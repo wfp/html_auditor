@@ -9,11 +9,16 @@ This project require the NodeJS module [HTML Auditor](https://github.com/wfp/nod
 Ensure that web server has access to operating system `PATH`.
 
 ```
-# PHP5 example using fpm
+# PHP5 using PHP-FPM
 vim /etc/php5/fpm/pool.d/www.conf
+# PHP7 using PHP-FPM
+vim /etc/php/7.0/fpm/pool.d/www.conf
 
 # Uncomment the env[PATH]
 env[PATH] = /usr/local/bin:/usr/bin:/bin
+
+# If needed, append install path of html-audit to env[PATH]
+which html-audit
 ```
 
 ## 3. Install one of the sitemap generator module
