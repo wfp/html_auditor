@@ -15,17 +15,16 @@ function html_auditor_requirements($phase) {
   switch ($phase) {
     case 'update':
     case 'runtime':
-      // Get html auditor service.
       $service = \Drupal::service('html_auditor');
-      // HTML audit tools are not correctly installed.
-      if ($result = $service->isHtmlAuditorEnabled()) {
+      // Check whether the html_auditor is installed or not.
+      $auditor = $service->isHtmlAuditorEnabled();
+      if (!$auditor->enabled) {
         $requirements['html_auditor'] = array(
           'title' => t('HTML Auditor'),
-          'value' => t('HTML Auditor tools cannot be found on the system. See <a href="https://github.com/wfp/html_auditor/tree/develop#1-install-html-auditor">installation instructions</a>.<br /><br />Error: @result', array('@result' => $result)),
+          'value' => $auditor->message,
           'severity' => REQUIREMENT_ERROR,
         );
       }
-      // HTML audit tools are correctly installed.
       else {
         $requirements['html_auditor'] = array(
           'title' => t('HTML Auditor'),
@@ -34,10 +33,12 @@ function html_auditor_requirements($phase) {
         );
       }
 
-      if (!$service->isSitemapEnabled()) {
+      // Check whether the sitemap is installed or not.
+      $sitemap = $service->isSitemapEnabled();
+      if (!$sitemap->enabled) {
         $requirements['sitemap_generator'] = array(
           'title' => t('Sitemap Generator'),
-          'value' => t($service::HTML_AUDITOR_WARNING_MESSAGE),
+          'value' => $sitemap->message,
           'severity' => REQUIREMENT_WARNING,
         );
       }
