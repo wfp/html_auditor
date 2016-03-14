@@ -44,11 +44,6 @@ class AuditorExecute {
   const HTML_AUDITOR_LINK_AUDIT = 'link';
 
   /**
-   * Command warning message.
-   */
-  const HTML_AUDITOR_WARNING_MESSAGE = 'You should install one of <a href="https://www.drupal.org/project/xmlsitemap">XML sitemap</a> or <a href="https://www.drupal.org/project/simple_sitemap">Simple XML sitemap</a> to generate an sitemap.xml file in order to fully take advantage of HTML Auditor.';
-
-  /**
    * The file system service.
    *
    * @var \Drupal\Core\File\FileSystem
@@ -88,21 +83,39 @@ class AuditorExecute {
    */
   public function isHtmlAuditorEnabled() {
     // Use OS level 'type' to test for presence of CLI tools.
-    $process_audit = new Process('type ' . self::HTML_AUDITOR_HTML_AUDIT);
+    $process = new Process('type ' . self::HTML_AUDITOR_HTML_AUDIT);
+    $return = (object) [
+      'enabled' => FALSE,
+      'message' => NULL,
+    ];
     try {
-      $process_audit->mustRun();
+      $process->mustRun();
+      $return->enabled = TRUE;
     }
     catch (ProcessFailedException $e) {
-      return $e->getMessage();
+      $return->message = t('HTML Auditor tools cannot be found on the system. See <a href="https://github.com/wfp/html_auditor/tree/develop#1-install-html-auditor">installation instructions</a>. <br><br> Error: @result', ['@result' => $e->getMessage()]);
     }
+
+    return $return;
   }
 
   /**
    * Check whether the sitemap module is enabled or not.
    */
   public function isSitemapEnabled() {
+    $return = (object) [
+      'enabled' => FALSE,
+      'message' => NULL,
+    ];
     // For Simple XML sitemap, 'simplesitemap' is 1.x and 'simple_sitemap' is 2.x.
-    return \Drupal::moduleHandler()->moduleExists('simple_sitemap') || \Drupal::moduleHandler()->moduleExists('simplesitemap') || \Drupal::moduleHandler()->moduleExists('xmlsitemap');
+    if (\Drupal::moduleHandler()->moduleExists('simple_sitemap') || \Drupal::moduleHandler()->moduleExists('simplesitemap') || \Drupal::moduleHandler()->moduleExists('xmlsitemap')) {
+      $return->enabled = TRUE;
+    }
+    else {
+      $return->message = t('You should install one of <a href="https://www.drupal.org/project/xmlsitemap">XML sitemap</a> or <a href="https://www.drupal.org/project/simple_sitemap">Simple XML sitemap</a> to generate an sitemap.xml file in order to fully take advantage of HTML Auditor.');
+    }
+
+    return $return;
   }
 
   /**
@@ -145,16 +158,23 @@ class AuditorExecute {
    * Runs html-audit fetch, html-audit a11y, html-audit html5, html-audit link node commands.
    */
   public function run() {
-    global $base_url;
     // Check for sitemap modules.
-    if (!$this->isSitemapEnabled()) {
-      return drupal_set_message(t(self::HTML_AUDITOR_WARNING_MESSAGE), 'warning');
+    $sitemap = $this->isSitemapEnabled();
+    if (!$sitemap->enabled) {
+      return drupal_set_message($sitemap->message, 'warning');
     }
 
+    // Check for html_auditor node moduel.
+    $auditor = $this->isHtmlAuditorEnabled();
+    if (!$auditor->enabled) {
+      return drupal_set_message($auditor->message, 'warning');
+    }
+
+    global $base_url;
     // Get html auditor configration.
     $config = $this->configFactory->get('html_auditor.settings');
-    $files = $this->fileSystem->realpath((sprintf('public://%s', $config->get('sitemap.files'))));
-    $report = $this->fileSystem->realpath((sprintf('public://%s', $config->get('sitemap.reports'))));
+    $files = $this->fileSystem->realpath('public://') . '/html_auditor/html';
+    $report = $this->fileSystem->realpath('public://') . '/html_auditor/reports/';
     // Get sitemap uri.
     $uri = $config->get('sitemap.uri');
     $parse_uri = parse_url($uri);

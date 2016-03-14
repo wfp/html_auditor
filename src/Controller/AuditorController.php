@@ -172,7 +172,7 @@ class AuditorController extends ControllerBase {
     // Get configuration.
     $config = $this->config('html_auditor.settings');
     // Get reports directory.
-    $directory = $this->fileSystem->realpath(sprintf('public://%s', $config->get('sitemap.reports')));
+    $directory = $this->fileSystem->realpath('public://') . '/html_auditor/reports';
     // Get report files.
     $files = file_scan_directory($directory, self::REPORT_FILES_REGEX);
     // Display empty message when report files don't exits.

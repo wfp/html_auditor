@@ -1,7 +1,5 @@
 sitemap:
   uri: /sitemap.xml
-  files: sitemaps
-  reports: reports
   last_modified: 24
 a11y:
   standard: WCAG2AA

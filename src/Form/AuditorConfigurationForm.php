@@ -39,33 +39,25 @@ class AuditorConfigurationForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('html_auditor.settings');
-    $sitemap_disabled = FALSE;
     $service = \Drupal::service('html_auditor');
-    if (!$service->isSitemapEnabled()) {
-      drupal_set_message(t($service::HTML_AUDITOR_WARNING_MESSAGE), 'warning');
-      $sitemap_disabled = TRUE;
+    $sitemap = $service->isSitemapEnabled();
+    $auditor = $service->isHtmlAuditorEnabled();
+    $disabled = FALSE;
+    if (!$sitemap->enabled) {
+      $disabled = TRUE;
+      drupal_set_message($sitemap->message, 'warning');
     }
+
+    if (!$auditor->enabled) {
+      $disabled = TRUE;
+      drupal_set_message($auditor->message, 'warning');
+    }
+
     $form['html_auditor']['sitemap_uri'] = [
       '#type' => 'textfield',
       '#title' => $this->t('XML Sitemap file path or URL'),
       '#description' => $this->t('Enter a file path such as <em>/sitemap.xml</em> or a URL such as <em>http://example.com/sitemap.xml</em>'),
       '#default_value' => $config->get('sitemap.uri'),
-      '#size' => 40,
-      '#required' => TRUE,
-    ];
-    $form['html_auditor']['sitemap_files'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('HTML download directory'),
-      '#description' => $this->t('Sub-directory that HTML pages are download into in the <em>files/</em> directory'),
-      '#default_value' => $config->get('sitemap.files'),
-      '#size' => 40,
-      '#required' => TRUE,
-    ];
-    $form['html_auditor']['sitemap_reports'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Report download directory'),
-      '#description' => $this->t('Sub-directory where reports are generated in the <em>files/</em> directory'),
-      '#default_value' => $config->get('sitemap.reports'),
       '#size' => 40,
       '#required' => TRUE,
     ];
@@ -118,7 +110,7 @@ class AuditorConfigurationForm extends ConfigFormBase {
     $form['html_auditor']['run'] = [
       '#type' => 'submit',
       '#value' => $this->t('Perform audit'),
-      '#disabled' => $sitemap_disabled,
+      '#disabled' => $disabled,
       '#submit' => ['::runAuditor'],
     ];
     return parent::buildForm($form, $form_state);
@@ -131,8 +123,6 @@ class AuditorConfigurationForm extends ConfigFormBase {
     $values = $form_state->getValues();
     $this->config('html_auditor.settings')
       ->set('sitemap.uri', $values['sitemap_uri'])
-      ->set('sitemap.files', Xss::filter($values['sitemap_files']))
-      ->set('sitemap.reports', Xss::filter($values['sitemap_reports']))
       ->set('sitemap.last_modified', $values['last_modified'])
       ->set('a11y.standard', $values['a11y_standard'])
       ->set('a11y.ignore', $values['a11y_ignore'])
@@ -162,7 +152,7 @@ class AuditorConfigurationForm extends ConfigFormBase {
       $response = $client->get($uri);
     }
     catch (RequestException $e) {
-      $form_state->setErrorByName('sitemap_uri', $this->t('Sitemap XML not found.<br /><br />Error: ' . $e->getMessage()));
+      $form_state->setErrorByName('sitemap_uri', $this->t('Sitemap XML not found.<br><br>Error: ' . $e->getMessage()));
     }
   }
 
