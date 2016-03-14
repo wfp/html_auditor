@@ -50,7 +50,7 @@ class AuditorConfigurationForm extends ConfigFormBase {
 
     if (!$auditor->enabled) {
       $disabled = TRUE;
-      drupal_set_message($auditor->message, 'warning');
+      drupal_set_message($auditor->message, 'error');
     }
 
     $form['html_auditor']['sitemap_uri'] = [

@@ -161,13 +161,17 @@ class AuditorExecute {
     // Check for sitemap modules.
     $sitemap = $this->isSitemapEnabled();
     if (!$sitemap->enabled) {
-      return drupal_set_message($sitemap->message, 'warning');
+      drupal_set_message($sitemap->message, 'warning');
     }
 
     // Check for html_auditor node moduel.
     $auditor = $this->isHtmlAuditorEnabled();
     if (!$auditor->enabled) {
-      return drupal_set_message($auditor->message, 'warning');
+      drupal_set_message($auditor->message, 'error');
+    }
+
+    if (!$sitemap->enabled || !$auditor->enabled) {
+      return;
     }
 
     global $base_url;
