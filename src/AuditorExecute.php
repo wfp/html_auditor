@@ -178,7 +178,7 @@ class AuditorExecute {
     // Get html auditor configration.
     $config = $this->configFactory->get('html_auditor.settings');
     $files = $this->fileSystem->realpath('public://') . '/html_auditor/html';
-    $report = $this->fileSystem->realpath('public://') . '/html_auditor/reports/';
+    $report = $this->fileSystem->realpath('public://') . '/html_auditor/reports';
     // Get sitemap uri.
     $uri = $config->get('sitemap.uri');
     $parse_uri = parse_url($uri);
