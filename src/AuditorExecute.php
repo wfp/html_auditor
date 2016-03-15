@@ -10,6 +10,7 @@ namespace Drupal\html_auditor;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelFactory;
 use Drupal\Core\File\FileSystem;
+use Drupal\Core\Url;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
@@ -107,8 +108,10 @@ class AuditorExecute {
       'enabled' => FALSE,
       'message' => NULL,
     ];
-    // For Simple XML sitemap, 'simplesitemap' is 1.x and 'simple_sitemap' is 2.x.
-    if (\Drupal::moduleHandler()->moduleExists('simple_sitemap') || \Drupal::moduleHandler()->moduleExists('simplesitemap') || \Drupal::moduleHandler()->moduleExists('xmlsitemap')) {
+
+    if (\Drupal::moduleHandler()->moduleExists('simple_sitemap') ||
+      \Drupal::moduleHandler()->moduleExists('simplesitemap') ||
+      \Drupal::moduleHandler()->moduleExists('xmlsitemap')) {
       $return->enabled = TRUE;
     }
     else {
@@ -119,25 +122,56 @@ class AuditorExecute {
   }
 
   /**
+   * Get success message by command type.
+   *
+   * @param string $type
+   *   Command type.
+   *
+   * @return string $message
+   *   Succeed command string.
+   */
+  public function setSuccessMessage($type) {
+    switch ($type) {
+      case 'fetch':
+        $message = 'Fetching of HTML run successfully.';
+        break;
+
+      case 'a11y':
+        $message = 'Accessibility (WCAG2) audit run successfully.';
+        break;
+
+      case 'html5':
+        $message = 'HTML5 audit run successfully.';
+        break;
+
+      case 'link':
+        $message = 'Link analysis run successfully.';
+        break;
+    }
+
+    return $message;
+  }
+
+  /**
    * Execute process.
    *
    * @param string $command
    *   Command string.
-   * @param $type
+   * @param string $type
    *   Command type.
    */
-  public function process_execute($command, $type) {
+  public function processExecute($command, $type) {
     // Create new process.
     $process = new Process($command);
     // Get html-audit logger.
     $log = $this->loggerFactory->get(self::HTML_AUDITOR_HTML_AUDIT);
     try {
-      // Success message.
-      $message = $type . ' run successfully.';
       $process->setTimeout(3600);
       // Run command.
       $process->mustRun();
-      // Sets a success message to display to the user.
+      // Get success message by type.
+      $message = $this->setSuccessMessage($type);
+      // Sets a success message.
       drupal_set_message($message);
       // Log success run.
       $log->info($message);
@@ -145,7 +179,7 @@ class AuditorExecute {
     catch (ProcessFailedException $e) {
       // Error message.
       $message = $e->getMessage();
-      // Sets a error message to display to the user.
+      // Sets a error message.
       drupal_set_message($message, 'error');
       // Log errors.
       $log->error($message);
@@ -155,7 +189,8 @@ class AuditorExecute {
   /**
    * Runs html auditor.
    *
-   * Runs html-audit fetch, html-audit a11y, html-audit html5, html-audit link node commands.
+   * Runs html-audit fetch, html-audit a11y,
+   * html-audit html5, html-audit link node commands.
    */
   public function run() {
     // Check for sitemap modules.
@@ -178,7 +213,7 @@ class AuditorExecute {
     // Get html auditor configration.
     $config = $this->configFactory->get('html_auditor.settings');
     $files = $this->fileSystem->realpath('public://') . '/html_auditor/html';
-    $report = $this->fileSystem->realpath('public://') . '/html_auditor/reports';
+    $report = $this->fileSystem->realpath('public://') . '/html_auditor/reports/';
     // Get sitemap uri.
     $uri = $config->get('sitemap.uri');
     $parse_uri = parse_url($uri);
@@ -186,26 +221,26 @@ class AuditorExecute {
       $uri = $base_url . '/' . ltrim($parse_uri['path'], '/');
     }
 
-    // Get lastmod.
-    $lastmod = $config->get('lastmod');
-    // Build --ignore argument for a11y.;
-    $ignore = implode(';', array_keys(array_filter($config->get('a11y.ignore'), function($value){
+    // Build --ignore argument for a11y.
+    $ignore = implode(';', array_keys(array_filter($config->get('a11y.ignore'), function($value) {
       return $value === 0;
     }, ARRAY_FILTER_USE_BOTH)));
     // Set date.
     $date = date_iso8601(time() - (int) $config->get('sitemap.last_modified') * 3600);
     // Execute fetch html.
-    $this->process_execute(sprintf('%s %s --uri %s --dir %s --map %s/%s --lastmod %s',
+    $this->processExecute(sprintf('%s %s --uri %s --dir %s --map %s/%s --lastmod %s',
       self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_HTML_FETCH, $uri, $files, $report, 'map', $date), self::HTML_AUDITOR_HTML_FETCH);
     // Execute a11y audit.
-    $this->process_execute(sprintf('%s %s --path %s --report %s --standard %s --ignore %s --map %s/%s.json  --lastmod',
+    $this->processExecute(sprintf('%s %s --path %s --report %s --standard %s --ignore %s --map %s/%s.json  --lastmod',
       self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_ACCESSIBILITY_AUDIT, $files, $report, $config->get('a11y.standard'), "'$ignore'", $report, 'map'), self::HTML_AUDITOR_ACCESSIBILITY_AUDIT);
     // Execute html5 audit.
-    $this->process_execute(sprintf('%s %s --path %s --report %s --errors-only %d --map %s/%s.json --lastmod',
+    $this->processExecute(sprintf('%s %s --path %s --report %s --errors-only %d --map %s/%s.json --lastmod',
       self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_HTML5_AUDIT, $files, $report, $config->get('html5.errors_only'), $report, 'map'), self::HTML_AUDITOR_HTML5_AUDIT);
     // Execute link audit.
-    $this->process_execute(sprintf('%s %s --path %s --report %s --report-verbose %d --base-uri %s --map %s/%s.json --lastmod',
+    $this->processExecute(sprintf('%s %s --path %s --report %s --report-verbose %d --base-uri %s --map %s/%s.json --lastmod',
         self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_LINK_AUDIT, $files, $report, $config->get('link.report_verbose'), $base_url, $report, 'map'), self::HTML_AUDITOR_LINK_AUDIT);
+
+    drupal_set_message(\Drupal::l('The HTML audit report has been generated', Url::fromRoute('html_auditor.report')));
   }
 
 }

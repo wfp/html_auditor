@@ -49,7 +49,6 @@ function html_auditor_requirements($phase) {
           'severity' => REQUIREMENT_OK,
         );
       }
-
       break;
   }
 

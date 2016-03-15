@@ -9,8 +9,6 @@ namespace Drupal\html_auditor\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Component\Utility\UrlHelper;
-use Drupal\Component\Utility\Xss;
 use GuzzleHttp\Exception\RequestException;
 
 /**
@@ -107,13 +105,22 @@ class AuditorConfigurationForm extends ConfigFormBase {
       '#default_value' => $config->get('link.report_verbose'),
       '#prefix' => '<strong>Link audit</strong>',
     ];
-    $form['html_auditor']['run'] = [
+    $form['actions']['#type'] = 'actions';
+    $form['actions']['submit'] = array(
+      '#type' => 'submit',
+      '#value' => $this->t('Save configuration'),
+      '#button_type' => 'primary',
+    );
+    $form['actions']['run'] = [
       '#type' => 'submit',
       '#value' => $this->t('Perform audit'),
       '#disabled' => $disabled,
       '#submit' => ['::runAuditor'],
     ];
-    return parent::buildForm($form, $form_state);
+
+    $form['#theme'] = 'system_config_form';
+
+    return $form;
   }
 
   /**
@@ -129,6 +136,8 @@ class AuditorConfigurationForm extends ConfigFormBase {
       ->set('html5.errors_only', $values['html5_errors_only'])
       ->set('link.report_verbose', $values['link_report_verbose'])
       ->save();
+
+    drupal_set_message($this->t('The configuration options have been saved.'));
   }
 
   /**
@@ -149,7 +158,7 @@ class AuditorConfigurationForm extends ConfigFormBase {
     // Create http request and check whether the sitemap URI exists or not.
     $client = \Drupal::httpClient();
     try {
-      $response = $client->get($uri);
+      $client->get($uri);
     }
     catch (RequestException $e) {
       $form_state->setErrorByName('sitemap_uri', $this->t('Sitemap XML not found.<br><br>Error: ' . $e->getMessage()));

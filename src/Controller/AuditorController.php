@@ -169,8 +169,6 @@ class AuditorController extends ControllerBase {
    */
   public function reportsPage() {
     $reports = [];
-    // Get configuration.
-    $config = $this->config('html_auditor.settings');
     // Get reports directory.
     $directory = $this->fileSystem->realpath('public://') . '/html_auditor/reports';
     // Get report files.
@@ -209,7 +207,7 @@ class AuditorController extends ControllerBase {
                 'file' => $this->l($uri_parse['path'], Url::fromUri($uri)),
                 'type' => $type,
                 'level' => $this->t($report['type']),
-                'message' => $this->t((string)$report['message']),
+                'message' => $this->t((string) $report['message']),
               ];
             }
             elseif ($type === 'link') {
@@ -218,7 +216,7 @@ class AuditorController extends ControllerBase {
                 'file' => $this->l($uri_parse['path'], Url::fromUri($uri)),
                 'type' => $type,
                 'level' => $this->t('error'),
-                'message' => $this->t((string)$report['error']),
+                'message' => $this->t((string) $report['error']),
               ];
             }
           }
