@@ -175,6 +175,8 @@ class AuditorExecute {
       drupal_set_message($message);
       // Log success run.
       $log->info($message);
+
+      return TRUE;
     }
     catch (ProcessFailedException $e) {
       // Error message.
@@ -183,6 +185,8 @@ class AuditorExecute {
       drupal_set_message($message, 'error');
       // Log errors.
       $log->error($message);
+
+      return FALSE;
     }
   }
 
@@ -213,7 +217,7 @@ class AuditorExecute {
     // Get html auditor configration.
     $config = $this->configFactory->get('html_auditor.settings');
     $files = $this->fileSystem->realpath('public://') . '/html_auditor/html';
-    $report = $this->fileSystem->realpath('public://') . '/html_auditor/reports/';
+    $report = $this->fileSystem->realpath('public://') . '/html_auditor/reports';
     // Get sitemap uri.
     $uri = $config->get('sitemap.uri');
     $parse_uri = parse_url($uri);
@@ -228,19 +232,21 @@ class AuditorExecute {
     // Set date.
     $date = date_iso8601(time() - (int) $config->get('sitemap.last_modified') * 3600);
     // Execute fetch html.
-    $this->processExecute(sprintf('%s %s --uri %s --dir %s --map %s/%s --lastmod %s',
-      self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_HTML_FETCH, $uri, $files, $report, 'map', $date), self::HTML_AUDITOR_HTML_FETCH);
-    // Execute a11y audit.
-    $this->processExecute(sprintf('%s %s --path %s --report %s --standard %s --ignore %s --map %s/%s.json  --lastmod',
-      self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_ACCESSIBILITY_AUDIT, $files, $report, $config->get('a11y.standard'), "'$ignore'", $report, 'map'), self::HTML_AUDITOR_ACCESSIBILITY_AUDIT);
-    // Execute html5 audit.
-    $this->processExecute(sprintf('%s %s --path %s --report %s --errors-only %d --map %s/%s.json --lastmod',
-      self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_HTML5_AUDIT, $files, $report, $config->get('html5.errors_only'), $report, 'map'), self::HTML_AUDITOR_HTML5_AUDIT);
-    // Execute link audit.
-    $this->processExecute(sprintf('%s %s --path %s --report %s --report-verbose %d --base-uri %s --map %s/%s.json --lastmod',
-        self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_LINK_AUDIT, $files, $report, $config->get('link.report_verbose'), $base_url, $report, 'map'), self::HTML_AUDITOR_LINK_AUDIT);
+    if ($this->processExecute(sprintf('%s %s --uri %s --dir %s --map %s/%s --lastmod %s',
+      self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_HTML_FETCH, $uri, $files, $report, 'map', $date), self::HTML_AUDITOR_HTML_FETCH) &&
+      // Execute a11y audit.
+      $this->processExecute(sprintf('%s %s --path %s --report %s --standard %s --ignore %s --map %s/%s.json  --lastmod',
+        self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_ACCESSIBILITY_AUDIT, $files, $report, $config->get('a11y.standard'), "'$ignore'", $report, 'map'), self::HTML_AUDITOR_ACCESSIBILITY_AUDIT) &&
+      // Execute html5 audit.
+      $this->processExecute(sprintf('%s %s --path %s --report %s --errors-only %d --map %s/%s.json --lastmod',
+        self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_HTML5_AUDIT, $files, $report, $config->get('html5.errors_only'), $report, 'map'), self::HTML_AUDITOR_HTML5_AUDIT) &&
+      // Execute link audit.
+      $this->processExecute(sprintf('%s %s --path %s --report %s --report-verbose %d --base-uri %s --map %s/%s.json --lastmod',
+          self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_LINK_AUDIT, $files, $report, $config->get('link.report_verbose'), $base_url, $report, 'map'), self::HTML_AUDITOR_LINK_AUDIT)) {
 
-    drupal_set_message(\Drupal::l('The HTML audit report has been generated', Url::fromRoute('html_auditor.report')));
+      drupal_set_message(\Drupal::l('The HTML audit report has been generated', Url::fromRoute('html_auditor.report')));
+    }
+
   }
 
 }
