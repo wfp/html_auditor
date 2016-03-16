@@ -28,6 +28,10 @@ which html-audit
 
 # Developer Guideline
 
+## Override the `sitemap_url` value from a `settings.php` file.
+
+$config['html_auditor.settings']['sitemap']['uri'] = 'http://example.com';
+
 ```
 # Install development dependencies
 composer install
