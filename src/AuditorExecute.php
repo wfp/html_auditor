@@ -245,12 +245,11 @@ class AuditorExecute {
       // Execute link audit.
       $this->processExecute(sprintf('%s %s --path %s --report %s --report-verbose %d --base-uri %s --map %s/%s.json --lastmod',
           self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_LINK_AUDIT, $files, $report, $config->get('link.report_verbose'), $base_url, $report, 'map'), self::HTML_AUDITOR_LINK_AUDIT)) {
-
       $finder = new Finder();
       $finder->files()->in($report)->name('map.json');
       $map = [];
 
-      foreach($finder as $file) {
+      foreach ($finder as $file) {
         $map = Json::decode($file->getContents());
       }
 
