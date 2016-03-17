@@ -13,6 +13,8 @@ use Drupal\Core\File\FileSystem;
 use Drupal\Core\Url;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
+use Drupal\Component\Serialization\Json;
+use Symfony\Component\Finder\Finder;
 
 /**
  * Execute HTML auditor node binaries.
@@ -244,9 +246,17 @@ class AuditorExecute {
       $this->processExecute(sprintf('%s %s --path %s --report %s --report-verbose %d --base-uri %s --map %s/%s.json --lastmod',
           self::HTML_AUDITOR_HTML_AUDIT, self::HTML_AUDITOR_LINK_AUDIT, $files, $report, $config->get('link.report_verbose'), $base_url, $report, 'map'), self::HTML_AUDITOR_LINK_AUDIT)) {
 
+      $finder = new Finder();
+      $finder->files()->in($report)->name('map.json');
+      $map = [];
+
+      foreach($finder as $file) {
+        $map = Json::decode($file->getContents());
+      }
+
+      drupal_set_message(t('@count HTML pages successfully fetched', ['@count' => count($map['uris'])]));
       drupal_set_message(\Drupal::l('The HTML audit report has been generated', Url::fromRoute('html_auditor.report')));
     }
-
   }
 
 }
