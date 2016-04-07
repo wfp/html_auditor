@@ -1,5 +1,5 @@
 html_auditor.settings:
-  path: '/admin/config/html-auditor'
+  path: '/admin/config/search/html-auditor'
   defaults:
     _form: '\Drupal\html_auditor\Form\AuditorConfigurationForm'
     _title: 'HTML Auditor'

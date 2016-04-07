@@ -1,5 +1,5 @@
 name: HTML Auditor
-description: Generates HTML report.
+description: Perform WCAG2, HTML5 and dead link audits of site pages.
 package: Audit
 type: module
 core: 8.x
