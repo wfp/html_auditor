@@ -1,7 +1,6 @@
 {
   "name": "drupal/html_auditor",
   "description": "HTML auditor for HTML5, accessibility (WCAG) and link analysis.",
-  "version": "8.1.0-RC1",
   "homepage": "https://github.com/wfp/html_auditor",
   "support": {
     "issues": "https://github.com/wfp/html_auditor/issues"
@@ -15,7 +14,7 @@
     "dead links"
   ],
   "license": "GPL-2.0+",
-  "minimum-stability": "RC",
+  "minimum-stability": "dev",
   "require-dev": {
     "drupal/coder": "8.2.5",
     "andrewholgate/drupalstrict": "0.1.1",
