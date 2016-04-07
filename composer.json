@@ -2,7 +2,7 @@
   "name": "drupal/html_auditor",
   "description": "HTML auditor for HTML5, accessibility (WCAG) and link analysis.",
   "homepage": "https://github.com/wfp/html_auditor",
-  "version": "8.1.0-RC1",
+  "version": "8.1.0",
   "support": {
     "issues": "https://github.com/wfp/html_auditor/issues"
   },
