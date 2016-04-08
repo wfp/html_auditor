@@ -43,6 +43,7 @@ class AuditorController extends ControllerBase {
    * @var \Drupal\Core\File\FileSystem
    */
   protected $fileSystem;
+  protected $markup;
 
   /**
    * {@inheritdoc}
@@ -144,6 +145,9 @@ class AuditorController extends ControllerBase {
       ],
       '#rows' => $rows,
       '#empty' => $this->t('There are no HTML audit reports to display.'),
+      '#attributes' => [
+        'class' => 'table-reports',
+      ],
       '#attached' => [
         'library' => [
           'html_auditor/report',
@@ -197,26 +201,40 @@ class AuditorController extends ControllerBase {
       foreach ($contents as $type => $content) {
         foreach ($content as $file => $data) {
           foreach ($data as $report) {
+            $message = '';
             // Get uri from map.json.
             $uri = $maps['uris'][$this->fileSystem->basename($file)];
             $uri_parse = parse_url($uri);
             if ($type === 'assessibility' || $type === 'html5') {
+              $level = $report['type'];
+              if ($level === 'error' && isset($report['context'])) {
+                $message = $this->t('<div class="message error">Broken element: @element</div>', [
+                  '@element' => $report['context'],
+                ]);
+              }
+
               // Extract a11y data.
               // Extract html5 data.
               $reports[] = [
                 'file' => $this->l($uri_parse['path'], Url::fromUri($uri)),
                 'type' => $type,
-                'level' => $this->t($report['type']),
-                'message' => $this->t((string) $report['message']),
+                'level' => $this->t($level),
+                'message' => $this->t((string) $report['message'] . $message),
               ];
             }
             elseif ($type === 'link') {
+              if (isset($report['html'])) {
+                $message = $this->t('<div class="message error">Broken link: @uri</div>', [
+                  '@uri' => $report['html'],
+                ]);
+              }
+
               // Extract link data.
               $reports[] = [
                 'file' => $this->l($uri_parse['path'], Url::fromUri($uri)),
                 'type' => $type,
                 'level' => $this->t('error'),
-                'message' => $this->t((string) $report['error']),
+                'message' => $this->t((string) $report['error'] . $message),
               ];
             }
           }

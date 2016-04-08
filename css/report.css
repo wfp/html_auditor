@@ -2,3 +2,21 @@
   display: inline-block;
   margin: .1em .9em .1em .1em;
 }
+
+.table-reports .error {
+  background: #ffaeae;
+}
+
+.table-reports .message {
+  display: none;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+.table-reports tr > td {
+  position: relative;
+}
+
+.table-reports tr:hover .message {
+  display: block;
+}
