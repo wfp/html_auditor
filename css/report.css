@@ -16,6 +16,7 @@
 .table-reports .message-expand {
   padding: 10px;
   margin: 10px 0;
+  cursor: auto;
 }
 
 .table-reports .message-expand.show {
