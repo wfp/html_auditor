@@ -43,7 +43,6 @@ class AuditorController extends ControllerBase {
    * @var \Drupal\Core\File\FileSystem
    */
   protected $fileSystem;
-  protected $markup;
 
   /**
    * {@inheritdoc}
@@ -84,7 +83,7 @@ class AuditorController extends ControllerBase {
     if (!empty($_SESSION['html_auditor_reports_filter'][$type])) {
       $reports = array_filter($reports, function($report) use ($type) {
         $types = $_SESSION['html_auditor_reports_filter'][$type];
-        return in_array($report[$type], $types);
+        return in_array($report['data'][$type], $types);
       });
     }
 
@@ -100,12 +99,12 @@ class AuditorController extends ControllerBase {
    * @return object
    *   Current object.
    */
-  private function reportsSortable(&$reports) {
+  private function reportsSortable(array &$reports) {
     // Sort reports.
     if (isset($reports)) {
       $type = \Drupal::request()->query->get('order', '');
       $sort = \Drupal::request()->query->get('sort', '');
-      usort($reports, function($prev, $next) use ($type) {
+      usort($reports['data'], function($prev, $next) use ($type) {
         if (isset($prev[$type], $next[$type])) {
           return strcmp($prev[$type], $next[$type]);
         }
@@ -131,7 +130,7 @@ class AuditorController extends ControllerBase {
    * @return array
    *   HTML reports structured array tree.
    */
-  private function reportsDisplay($rows) {
+  private function reportsDisplay($rows = []) {
     // Render reports filter form.
     $build['reports_filter'] = $this->formBuilder->getForm('Drupal\html_auditor\Form\AuditorFilterForm');
     // Render reports table.
@@ -163,6 +162,35 @@ class AuditorController extends ControllerBase {
   }
 
   /**
+   * Display expanded report message.
+   *
+   * @param string $type
+   *   Report type.
+   * @param string $level
+   *   Report level.
+   * @param array $report
+   *   Report data.
+   *
+   * @return string $message
+   *   HTML string.
+   */
+  private function reportsMessageExpand($type, $level, $report) {
+    $message = '';
+    if ($type === 'assessibility' && $level === 'error' && isset($report['context'])) {
+      $message = $this->t('<div class="message-expand error hide">@element</div>', [
+        '@element' => $report['context'],
+      ]);
+    }
+    elseif ($type === 'link' && isset($report['html'])) {
+      $message = $this->t('<div class="message-expand error hide">@html</div>', [
+        '@html' => $report['html'],
+      ]);
+    }
+
+    return $message;
+  }
+
+  /**
    * Displays a listing of HTML reports.
    *
    * Ten reports are available per page.
@@ -172,69 +200,70 @@ class AuditorController extends ControllerBase {
    *   A render array as expected by drupal_render().
    */
   public function reportsPage() {
-    $reports = [];
+    $reports = $maps = [];
     // Get reports directory.
     $directory = $this->fileSystem->realpath('public://') . '/html_auditor/reports';
     // Get report files.
     $files = file_scan_directory($directory, self::REPORT_FILES_REGEX);
-    // Display empty message when report files don't exits.
-    if (!$files) {
-      return $this->reportsDisplay([]);
-    }
-
-    $maps = [];
     // New Finder instance.
     $report_files = new Finder();
     // New Finder instance.
     $report_map = new Finder();
     // Get map.json content.
     $report_map->files()->in($directory)->name('map.json');
+
     foreach ($report_map as $map) {
       $maps = Json::decode($map->getContents());
+    }
+
+    // Display empty message when report files or map file don't exits.
+    if (!$files || !$maps) {
+      return $this->reportsDisplay();
     }
 
     // Get JSON content from files.
     $report_files->files()->in($directory)->name(self::REPORT_FILES_REGEX);
     foreach ($report_files as $file) {
-      // Get data as an object.
-      $contents = (object) Json::decode($file->getContents());
+      $contents = Json::decode($file->getContents());
       foreach ($contents as $type => $content) {
         foreach ($content as $file => $data) {
           foreach ($data as $report) {
-            $message = '';
+            $class = '';
             // Get uri from map.json.
             $uri = $maps['uris'][$this->fileSystem->basename($file)];
             $uri_parse = parse_url($uri);
-            if ($type === 'assessibility' || $type === 'html5') {
-              $level = $report['type'];
-              if ($level === 'error' && isset($report['context'])) {
-                $message = $this->t('<div class="message error">Broken element: @element</div>', [
-                  '@element' => $report['context'],
-                ]);
-              }
+            // Get level.
+            $level = $report['type'];
+            // Get expanded message.
+            $message_expand = $this->reportsMessageExpand($type, $level, $report);
 
+            if ($message_expand) {
+              $class = 'is-expandable';
+            }
+
+            if ($type === 'assessibility' || $type === 'html5') {
               // Extract a11y data.
               // Extract html5 data.
               $reports[] = [
-                'file' => $this->l($uri_parse['path'], Url::fromUri($uri)),
-                'type' => $type,
-                'level' => $this->t($level),
-                'message' => $this->t((string) $report['message'] . $message),
+                'data' => [
+                  'file' => $this->l($uri_parse['path'], Url::fromUri($uri)),
+                  'type' => $type,
+                  'level' => $this->t($level),
+                  'message' => $this->t((string) $report['message'] . $message_expand),
+                ],
+                'class' => $class,
               ];
             }
             elseif ($type === 'link') {
-              if (isset($report['html'])) {
-                $message = $this->t('<div class="message error">Broken link: @uri</div>', [
-                  '@uri' => $report['html'],
-                ]);
-              }
-
               // Extract link data.
               $reports[] = [
-                'file' => $this->l($uri_parse['path'], Url::fromUri($uri)),
-                'type' => $type,
-                'level' => $this->t('error'),
-                'message' => $this->t((string) $report['error'] . $message),
+                'data' => [
+                  'file' => $this->l($uri_parse['path'], Url::fromUri($uri)),
+                  'type' => $type,
+                  'level' => $this->t('error'),
+                  'message' => $this->t((string) $report['error'] . $message_expand),
+                ],
+                'class' => $class,
               ];
             }
           }
@@ -242,23 +271,15 @@ class AuditorController extends ControllerBase {
       }
     }
 
-    // Filter by type or / and level.
+    // Filter by type or level.
     $this->reportsFilter($reports, 'type')->reportsFilter($reports, 'level');
-    // Get reports count.
-    $reports_length = count($reports);
-    // Initialize pager.
-    pager_default_initialize($reports_length, self::REPORTS_MAX_LENGTH);
-    // Chunk reports array.
+    // Pager initialize.
+    pager_default_initialize(count($reports), self::REPORTS_MAX_LENGTH);
     $reports = array_chunk($reports, self::REPORTS_MAX_LENGTH);
-    // Get page id.
-    $page = pager_find_page();
+    // Get reports by page id.
+    $rows = $reports[pager_find_page()];
     // Make the reports sortable.
-    $this->reportsSortable($reports[$page]);
-    // Table rows.
-    $rows = [];
-    if (isset($page, $reports[$page])) {
-      $rows = $reports[$page];
-    }
+    $this->reportsSortable($rows);
 
     return $this->reportsDisplay($rows);
   }

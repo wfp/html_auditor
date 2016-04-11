@@ -1,22 +1,31 @@
+/* Form */
 .html-auditor-reports-filter-form .form-type-select {
   display: inline-block;
   margin: .1em .9em .1em .1em;
+}
+
+/* Table */
+.table-reports tr > td {
+  position: relative;
 }
 
 .table-reports .error {
   background: #ffaeae;
 }
 
-.table-reports .message {
-  display: none;
+.table-reports .message-expand {
   padding: 10px;
   margin: 10px 0;
 }
 
-.table-reports tr > td {
-  position: relative;
+.table-reports .message-expand.show {
+  display: block;
 }
 
-.table-reports tr:hover .message {
-  display: block;
+.table-reports .message-expand.hide {
+  display: none;
+}
+
+.table-reports tr.is-expandable {
+  cursor: pointer;
 }

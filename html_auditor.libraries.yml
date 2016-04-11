@@ -3,3 +3,5 @@ report:
   css:
     theme:
       css/report.css: {}
+  js:
+    js/report.js: {}
