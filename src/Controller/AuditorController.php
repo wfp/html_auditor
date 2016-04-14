@@ -98,7 +98,7 @@ class AuditorController extends ControllerBase {
    * @return object
    *   Current object.
    */
-  private function reportsSortable(array &$reports) {
+  private function reportsSortable(&$reports) {
     // Sort reports.
     if (isset($reports)) {
       $type = \Drupal::request()->query->get('order', '');
@@ -175,15 +175,27 @@ class AuditorController extends ControllerBase {
    */
   private function reportsMessageExpand($type, $level, $report) {
     $message = '';
-    if ($type === 'assessibility' && $level === 'error' && isset($report['context'])) {
-      $message = $this->t('<div class="message-expand error hide">@element</div>', [
-        '@element' => $report['context'],
-      ]);
+    if (!$level) {
+      $level = 'error';
     }
-    elseif ($type === 'link' && isset($report['html'])) {
-      $message = $this->t('<div class="message-expand error hide">@html</div>', [
-        '@html' => $report['html'],
-      ]);
+
+    if ($level === 'error') {
+      $template = '<div class="message-expand error hide">@element</div>';
+      if ($type === 'assessibility' && isset($report['context'])) {
+        $message = $this->t($template, [
+          '@element' => $report['context'],
+        ]);
+      }
+      elseif ($type === 'link' && isset($report['html'])) {
+        $message = $this->t($template, [
+          '@element' => $report['html'],
+        ]);
+      }
+      elseif ($type === 'html5' && isset($report['extract'])) {
+        $message = $this->t($template, [
+          '@element' => $report['extract'],
+        ]);
+      }
     }
 
     return $message;
@@ -248,7 +260,7 @@ class AuditorController extends ControllerBase {
                 'data' => [
                   'file' => $this->l($uri_parse['path'], Url::fromUri($uri)),
                   'type' => $type,
-                  'level' => $level,
+                  'level' => $this->t($level),
                   'message' => $this->t((string) $report['message'] . $message_expand),
                 ],
                 'class' => $class,
@@ -260,7 +272,7 @@ class AuditorController extends ControllerBase {
                 'data' => [
                   'file' => $this->l($uri_parse['path'], Url::fromUri($uri)),
                   'type' => $type,
-                  'level' => 'error',
+                  'level' => $this->t('error'),
                   'message' => $this->t((string) $report['error'] . $message_expand),
                 ],
                 'class' => $class,
