@@ -105,12 +105,18 @@ class AuditorConfigurationForm extends ConfigFormBase {
       '#default_value' => $config->get('link.report_verbose'),
       '#prefix' => '<strong>Link audit</strong>',
     ];
+    $form['html_auditor']['cron'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Perform HTML audit on cron run'),
+      '#default_value' => $config->get('cron.enable'),
+      '#prefix' => '<strong>Cron</strong>',
+    ];
     $form['actions']['#type'] = 'actions';
-    $form['actions']['submit'] = array(
+    $form['actions']['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Save configuration'),
       '#button_type' => 'primary',
-    );
+    ];
     $form['actions']['run'] = [
       '#type' => 'submit',
       '#value' => $this->t('Perform audit'),
@@ -135,6 +141,7 @@ class AuditorConfigurationForm extends ConfigFormBase {
       ->set('a11y.ignore', $values['a11y_ignore'])
       ->set('html5.errors_only', $values['html5_errors_only'])
       ->set('link.report_verbose', $values['link_report_verbose'])
+      ->set('cron.enable', $values['cron'])
       ->save();
 
     drupal_set_message($this->t('The configuration options have been saved.'));

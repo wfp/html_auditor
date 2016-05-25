@@ -9,6 +9,9 @@
  * Implements hook_cron().
  */
 function html_auditor_cron() {
-  // Run html auditor.
-  \Drupal::service('html_auditor')->run();
+  $config = \Drupal::config('html_auditor.settings');
+  if ($config->get('cron.enable')) {
+    // Run html auditor.
+    \Drupal::service('html_auditor')->run();
+  }
 }
