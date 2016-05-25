@@ -11,3 +11,5 @@ html5:
   errors_only: true
 link:
   report_verbose: true
+cron:
+  enable: false
