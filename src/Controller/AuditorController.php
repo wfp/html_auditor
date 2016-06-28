@@ -165,18 +165,17 @@ class AuditorController extends ControllerBase {
    *
    * @param string $type
    *   Report type.
-   * @param string $level
-   *   Report level.
    * @param array $report
    *   Report data.
    *
    * @return string
    *   HTML message string.
    */
-  private function reportsMessageExpand($type, $level, $report) {
+  private function reportsMessageExpand($type, $report) {
     $message = '';
-    if (!$level) {
-      $level = 'error';
+    $level = 'error';
+    if (isset($report['type'])) {
+      $level = $report['type'];
     }
 
     if ($level === 'error') {
@@ -212,30 +211,33 @@ class AuditorController extends ControllerBase {
    */
   public function reportsPage() {
     $reports = [];
-    $maps = [];
     // Get reports directory.
     $directory = $this->fileSystem->realpath('public://') . '/html_auditor/reports';
     // Get report files.
     $files = file_scan_directory($directory, self::REPORT_FILES_REGEX);
+    // Display empty message when report files don't exists.
+    if (!$files) {
+      return $this->reportsDisplay();
+    }
+
     // New Finder instance.
     $report_files = new Finder();
     // New Finder instance.
     $report_map = new Finder();
-    // Get map.json content.
+    // Get map.json file.
     $report_map->files()->in($directory)->name('map.json');
-
-    foreach ($report_map as $map) {
-      $maps = Json::decode($map->getContents());
-    }
-
-    // Display empty message when report files or map file don't exits.
-    if (!$files || !$maps) {
+    $maps = iterator_to_array($report_map);
+    // Display empty message when map file doesn't exists.
+    if (!$maps) {
       return $this->reportsDisplay();
     }
 
-    // Get JSON content from files.
+    // Get map.json content.
+    $maps = Json::decode(array_shift($maps)->getContents());
+    // Get JSON report files.
     $report_files->files()->in($directory)->name(self::REPORT_FILES_REGEX);
     foreach ($report_files as $file) {
+      // Get report files content.
       $contents = Json::decode($file->getContents());
       foreach ($contents as $type => $content) {
         foreach ($content as $file => $data) {
@@ -244,10 +246,8 @@ class AuditorController extends ControllerBase {
             // Get uri from map.json.
             $uri = $maps['uris'][$this->fileSystem->basename($file)];
             $uri_parse = parse_url($uri);
-            // Get level.
-            $level = $report['type'];
             // Get expanded message.
-            $message_expand = $this->reportsMessageExpand($type, $level, $report);
+            $message_expand = $this->reportsMessageExpand($type, $report);
 
             if ($message_expand) {
               $class = 'is-expandable';
@@ -260,7 +260,7 @@ class AuditorController extends ControllerBase {
                 'data' => [
                   'file' => $this->l($uri_parse['path'], Url::fromUri($uri)),
                   'type' => $type,
-                  'level' => $this->t($level),
+                  'level' => $this->t($report['type']),
                   'message' => $this->t((string) $report['message'] . $message_expand),
                 ],
                 'class' => $class,
