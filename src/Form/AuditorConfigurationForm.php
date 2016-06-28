@@ -158,7 +158,7 @@ class AuditorConfigurationForm extends ConfigFormBase {
       global $base_url;
     }
 
-    if ($base_url) {
+    if (isset($base_url)) {
       $uri = sprintf('%s/%s', $base_url, ltrim($uri, '/'));
     }
 
