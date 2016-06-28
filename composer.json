@@ -26,8 +26,5 @@
     "post-install-cmd": [
       "[ -f ./vendor/bin/phpcs ]; ./vendor/bin/phpcs --config-set installed_paths ../../drupal/coder/coder_sniffer,../../andrewholgate/drupalstrict"
     ]
-  },
-  "require": {
-    "symfony/finder": "^3.1"
   }
 }
